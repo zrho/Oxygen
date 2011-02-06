@@ -1,0 +1,81 @@
+/**
+ * Oxygen Operating System
+ * Copyright (C) 2011 Lukas Heidemann
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+#pragma once
+#include <api/types.h>
+
+//----------------------------------------------------------------------------//
+// String Utilties
+//----------------------------------------------------------------------------//
+
+/**
+ * Determines the length of the given string.
+ *
+ * @param str The string to determine the length of.
+ * @return The length of the string.
+ */
+size_t strlen(int8_t *str);
+
+/**
+ * Compares the given strings and returns whether they are equal.
+ *
+ * @param a The first string.
+ * @param b The second string.
+ * @return <tt>1</tt> when equal, <tt>0</tt> otherwise.
+ */
+uint8_t strcmp(int8_t *a, int8_t *b);
+
+/**
+ * Copies the given source string to the given destination.
+ *
+ * @param dest The destination to copy the string to.
+ * @param src The string to copy.
+ * @return The value of <tt>dest</tt>.
+ */
+int8_t *strcpy(int8_t *dest, int8_t *src);
+
+//----------------------------------------------------------------------------//
+// Memory Utilties
+//----------------------------------------------------------------------------//
+
+/**
+ * Copies <tt>n</tt> bytes from <tt>src</tt> to <tt>dest</tt>.
+ *
+ * @param dest The destination in memory.
+ * @param src The source in memory.
+ * @param length The length of the memory chunk to copy.
+ */
+void memcpy(void *dest, void *src, size_t length);
+
+/**
+ * Copies the given byte to the memory from <tt>dest</tt> to <tt>dest + length</tt>.
+ *
+ * @param dest The destination in memory.
+ * @param c The byte to copy.
+ * @param length The length of the memory chunk to write.
+ */
+void memset(void *dest, uint8_t c, size_t length);
+
+/**
+ * Aligns the given address by the given boundary.
+ *
+ * @param address The address to align.
+ * @param boundary The boundary to align by.
+ * @return The aligned address.
+ */
+uintptr_t mem_align(uintptr_t address, size_t boundary);

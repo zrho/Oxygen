@@ -1,0 +1,52 @@
+# Directories
+BIN_DIR=build/loader
+
+# CC
+CC=gcc
+CCFLAGS=-m32 \
+    -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+    -D__X86__ \
+    -D__DEBUG__ \
+    -x c \
+    -I./src/
+    
+# Object files
+OBJECT_FILES = \
+    amd64/boot/boot.o \
+    amd64/boot/info.o \
+    amd64/boot/init.o \
+    amd64/boot/loader.o \
+    amd64/boot/page.o \
+    amd64/debug/console.o \
+    amd64/io/io.o \
+    common/debug/console.o \
+    common/memory/mem_align.o \
+    common/memory/memcpy.o \
+    common/memory/memset.o \
+    common/memory/strlen.o \
+    common/memory/strcpy.o \
+    common/memory/strcmp.o
+
+OBJECT_PATHS = $(OBJECT_FILES:%.o=$(BIN_DIR)/%.o)
+
+# Compiles C code
+$(BIN_DIR)/%.o: $(SOURCE_DIR)/%.c
+	mkdir -p $(@D)
+	$(CC) $(CCFLAGS) -o $@ -c $<
+
+# Assembles NASM
+$(BIN_DIR)/%.o: $(SOURCE_DIR)/%.s
+	mkdir -p $(@D)
+	$(ASM32) $(ASM32FLAGS) -o $@ $<
+    
+# Links the binary
+.PHONY: link
+link:
+	$(LD) $(LDFLAGS) -T link/amd64/loader.ld -o $(BIN_DIR)/loader64.bin $(OBJECT_PATHS)
+    
+# Builds the object files
+build: $(OBJECT_PATHS)
+    
+# Assembles the binary
+.PHONY: all
+all: build link
