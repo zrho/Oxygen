@@ -40,10 +40,10 @@
 #define PAGE_VIRT_PT(pdp, pd, pt)   (PAGE_OFFSET_PT | (pdp << 30) | (pd << 21) \
                                     | (pt << 12))
                                     
-#define PAGE_VIRT_PML4E(i)          PAGE_VIRT_PML4 + i * 8
-#define PAGE_VIRT_PDPE(pdp, i)      PAGE_VIRT_PDP(pdp) + i * 8
-#define PAGE_VIRT_PDE(pdp, pd, i)   PAGE_VIRT_PD(pdp, pd) + i * 8
-#define PAGE_VIRT_PTE(pdp, pd, pt, i) PAGE_VIRT_PT(pdp, pd, pt) + i * 8
+#define PAGE_VIRT_PML4E(i)          (PAGE_VIRT_PML4 + i * 8)
+#define PAGE_VIRT_PDPE(pdp, i)      (PAGE_VIRT_PDP(pdp) + i * 8)
+#define PAGE_VIRT_PDE(pdp, pd, i)   (PAGE_VIRT_PD(pdp, pd) + i * 8)
+#define PAGE_VIRT_PTE(pdp, pd, pt, i) (PAGE_VIRT_PT(pdp, pd, pt) + i * 8)
 
 #define PAGE_VIRT_PAGE(a)           PAGE_VIRT_PTE( \
                                        PAGE_PML4E_INDEX(a), \

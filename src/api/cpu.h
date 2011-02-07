@@ -20,6 +20,20 @@
 #include <api/types.h>
 
 //----------------------------------------------------------------------------//
+// Interrupts
+//----------------------------------------------------------------------------//
+
+typedef uint8_t interrupt_vector;
+
+/**
+ * Registers an interrupt handler for the given interrupt vector.
+ *
+ * @param vector The interrupt vector to register the handler for.
+ * @param handler The interrupt handler to register.
+ */
+void cpu_int_register(interrupt_vector vector, void (*handler)(interrupt_vector, void *));
+
+//----------------------------------------------------------------------------//
 // Interruptable
 //----------------------------------------------------------------------------//
 

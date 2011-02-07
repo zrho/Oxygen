@@ -16,9 +16,77 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 #include <api/types.h>
 #include <api/cpu.h>
+#include <api/memory/page.h>
+#include <api/string.h>
+#include <amd64/cpu.h>
+
+#include <api/debug/console.h>
+
+//----------------------------------------------------------------------------//
+// Variables
+//----------------------------------------------------------------------------//
+
+cpu_int_entry_t cpu_int_idt[255];
+cpu_int_pointer_t cpu_int_pointer;
+
+//----------------------------------------------------------------------------//
+// Internal
+//----------------------------------------------------------------------------//
+
+/**
+ * Writes the given IDT pointer to the IDT register.
+ *
+ * @param pointer IDT pointer to write.
+ */
+static void _cpu_int_flush(cpu_int_pointer_t pointer)
+{
+    //return;
+    asm volatile ("lidt %0" : : "m" (pointer));
+}
+
+//----------------------------------------------------------------------------//
+// Interrupts
+//----------------------------------------------------------------------------//
+
+/**
+ * Interrupt handlers defined in ASM.
+ */
+extern uintptr_t _cpu_int_handlers[256];
+
+void cpu_int_init()
+{
+    // Setup pointer
+    cpu_int_pointer.offset = (uintptr_t) &cpu_int_idt;
+    cpu_int_pointer.limit = (uint16_t) (256 * sizeof(cpu_int_entry_t) - 1);
+    
+    // Setup table
+    memset((void *) &cpu_int_idt, 0, sizeof(cpu_int_entry_t) * 256);
+    
+    size_t vector;
+    for (vector = 0; vector < 255; ++vector) {
+        uintptr_t offset = _cpu_int_handlers[vector];
+        cpu_int_entry_t *entry = &cpu_int_idt[vector];
+        
+        entry->offsetLow = (uint16_t) offset;
+        entry->offsetMiddle = (uint16_t) (offset >> 16);
+        entry->offsetHigh = (uint32_t) (offset >> 32);
+        entry->zero0 = entry->zero1 = 0;
+        entry->cs = 0x08;
+        entry->flags = 0x8E;
+    }
+    
+    // Load idt
+    _cpu_int_flush(cpu_int_pointer);
+}
+
+void cpu_int_register(interrupt_vector vector, void (*handler)(interrupt_vector, void *))
+{
+    
+}
+
+void _cpu_int_handler() {}
 
 //----------------------------------------------------------------------------//
 // Interruptable

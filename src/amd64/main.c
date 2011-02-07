@@ -58,13 +58,15 @@ void main()
     console_print("\n");
     
     // Set up frame heap
-    console_print("Initializing frame heap...");
+    console_print("Initializing frame heap...\n");
     frame_setup(info, (void *) info->free_mem_begin);
     
     // Initialize paging
-    console_print("Initializing paging...");
+    console_print("Initializing paging...\n");
     uintptr_t pml4 = cpu_get_cr3();
     page_init(pml4, pml4);
     
-    // 
+    // Initialize interrupts
+    console_print("Initializing interrupts...\n");
+    cpu_int_init();
 }

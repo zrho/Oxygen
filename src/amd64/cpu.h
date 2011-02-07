@@ -18,6 +18,85 @@
 
 #pragma once
 #include <api/types.h>
+#include <api/compiler.h>
+
+//----------------------------------------------------------------------------//
+// Registers
+//----------------------------------------------------------------------------//
+
+typedef struct cpu_registers_t
+{
+    uint64_t ds;
+    uint64_t di, si, bp, sp, bx, dx, cx, ax;
+} PACKED cpu_registers_t;
+
+//----------------------------------------------------------------------------//
+// Interrupts
+//----------------------------------------------------------------------------//
+
+/**
+ * An entry of the Interrupt Descriptor Table.
+ */
+typedef struct cpu_int_entry_t
+{
+    /**
+     * The lowest 2 bytes of the offset.
+     */
+    uint16_t offsetLow;
+    
+    /**
+     * The code segment selector.
+     */
+    uint16_t cs;
+    
+    /**
+     * Always zero.
+     */
+    uint8_t zero0;
+    
+    /**
+     * Flags and types.
+     */
+    uint8_t flags;
+    
+    /**
+     * Middle 2 bytes of the offset.
+     */
+    uint16_t offsetMiddle;
+    
+    /**
+     * Highest 4 bytes of the offset.
+     */
+    uint32_t offsetHigh;
+    
+    /**
+     * Always zero.
+     */
+    uint32_t zero1;
+    
+} PACKED cpu_int_entry_t;
+
+/**
+ * Pointer to the Interrupt Descriptor Table.
+ */
+typedef struct cpu_int_pointer_t
+{
+    /**
+     * Offset of the maximum addressable byte in the table.
+     */
+    uint16_t limit;
+    
+    /**
+     * (Paged) address of the first byte of the table.
+     */
+    uint64_t offset;
+    
+} PACKED cpu_int_pointer_t;
+
+/**
+ * Sets up interrupt handling.
+ */
+void cpu_int_init();
 
 //----------------------------------------------------------------------------//
 // Control registers

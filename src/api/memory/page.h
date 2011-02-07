@@ -62,6 +62,19 @@ void page_map(uintptr_t virt, uintptr_t phys, uint16_t flags);
 void page_unmap(uintptr_t virt);
 
 //----------------------------------------------------------------------------//
+// Page - Analyzation
+//----------------------------------------------------------------------------//
+
+/**
+ * Returns the physical address the given virtual one maps to.
+ *
+ * @param virt The virtual address.
+ * @return The physical address the virtual one maps to or <tt>(uintptr_t) -1</tt>
+ *  on error.
+ */
+uintptr_t page_get_physical(uintptr_t virt);
+
+//----------------------------------------------------------------------------//
 // Page - Address Space
 //----------------------------------------------------------------------------//
 

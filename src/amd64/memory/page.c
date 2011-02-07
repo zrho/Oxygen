@@ -46,7 +46,7 @@ static uintptr_t page_kernel_pml4;
 #define PAGE_GET_PHYS(page)         mem_align(page, PAGE_SIZE)
 
 #define PAGE_FLAGS_KERNEL           PG_PRESENT | PG_WRITABLE | PG_GLOBAL
-#define PAGE_FLAGS_RECURSIVE        PG_PRESENT
+#define PAGE_FLAGS_RECURSIVE        PG_PRESENT | PG_WRITABLE
 #define PAGE_FLAGS_AUX              PG_PRESENT | PG_WRITABLE
 
 //----------------------------------------------------------------------------//
@@ -143,7 +143,7 @@ static void _page_alloc_frame(page_t *page, uint16_t flags)
  *
  * @param virt The virtual address that belongs to the page to create.
  * @param create Whether to create the page, if it does not exist.
- * @return Returns whether the page existed before calling this method.
+ * @return Returns whether the page exists now.
  */
 static bool _page_exists(uintptr_t virt, bool create)
 {
@@ -153,8 +153,8 @@ static bool _page_exists(uintptr_t virt, bool create)
     if (!(*pml4e & PG_PRESENT)) {
         if (create)
             _page_alloc_frame(pml4e, PAGE_FLAGS_RECURSIVE);
-            
-        return false;
+        else
+            return false;
     }
         
     // PDPE
@@ -165,8 +165,8 @@ static bool _page_exists(uintptr_t virt, bool create)
     if (!(*pdpe & PG_PRESENT)) {
         if (create)
             _page_alloc_frame(pdpe, PAGE_FLAGS_RECURSIVE);
-            
-        return false;
+        else
+            return false;
     }
         
     // PDE
@@ -178,8 +178,8 @@ static bool _page_exists(uintptr_t virt, bool create)
     if (!(*pde & PG_PRESENT)) {
         if (create)
             _page_alloc_frame(pde, PAGE_FLAGS_RECURSIVE);
-            
-        return false;
+        else
+            return false;
     }
     
     // Exists
@@ -209,6 +209,10 @@ void page_init(uintptr_t virt, uintptr_t phys)
     
     // Save the physical address of the kernel PDP
     page_kernel_pdp = mem_align(*((page_t *) (virt + 8 * 510)), PAGE_SIZE);
+    
+    // Setup recursive mapping
+    page_t *last_pdp = (page_t *) (virt + 8 * 511);
+    _page_map(last_pdp, phys, PAGE_FLAGS_RECURSIVE);
     
     // Unmap low virtual memory (first PDP)
     // Assumes that the GLOBAL flag is not set for these pages, i.e. they are
@@ -257,6 +261,39 @@ void page_unmap(uintptr_t virt)
     
     // Release lock
     spinlock_release(&page_lock);
+}
+
+//----------------------------------------------------------------------------//
+// Page - Analyzation
+//----------------------------------------------------------------------------//
+
+uintptr_t page_get_physical(uintptr_t virt)
+{
+    // Acquire lock
+    spinlock_acquire(&page_lock);
+
+    // Align (down) virtual address
+    uintptr_t aligned = virt & ~0xFFF;
+    
+    // Calculate offset in page
+    uintptr_t offset = virt - aligned;
+    
+    // Check if page exists
+    uintptr_t phys = (uintptr_t) -1;
+    
+    if (_page_exists(virt, false)) {
+        // Align (down) page value
+        phys = *((page_t *) PAGE_VIRT_PAGE(virt));
+        phys &= ~0xFFF;
+        
+        // Add offset
+        phys += offset;
+    }
+    
+    // Release lock
+    spinlock_release(&page_lock);
+    
+    return phys;
 }
 
 //----------------------------------------------------------------------------//
