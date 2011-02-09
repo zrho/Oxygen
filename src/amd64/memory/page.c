@@ -26,6 +26,8 @@
 #include <amd64/cpu.h>
 #include <amd64/memory/page.h>
 
+#include <api/debug/console.h>
+
 //----------------------------------------------------------------------------//
 // Variables
 //----------------------------------------------------------------------------//
@@ -60,7 +62,7 @@ static uintptr_t page_kernel_pml4;
  */
 static void _page_do_invalidate(uintptr_t virt)
 {
-	//asm volatile ("invlpg %0" : "=r" (virt));
+	asm volatile ("invlpg %0" :: "m" (virt));
 }
 
 /**
@@ -134,7 +136,8 @@ static void _page_unmap(page_t *page)
 static void _page_alloc_frame(page_t *page, uint16_t flags)
 {
     // TODO: PANIC on error
-    _page_map(page, frame_alloc(), flags);
+    uintptr_t frame = frame_alloc();
+    _page_map(page, frame, flags);
 }
 
 /**
@@ -239,7 +242,7 @@ void page_map(uintptr_t virt, uintptr_t phys, uint16_t flags)
     _page_map((page_t *) PAGE_VIRT_PAGE(virt), phys, flags);
 	
 	// Invalidate TLB entry
-	_page_invalidate(virt);
+    _page_invalidate(virt);
     
     // Release lock
     spinlock_release(&page_lock);
@@ -363,7 +366,7 @@ void page_dispose_space()
         page = (page_t *) PAGE_VIRT_PML4E(pml4e);
         
         // Free frame
-        frame_free(PAGE_GET_PHYS(page));
+        frame_free(PAGE_GET_PHYS(*page));
     }
     
     // Switch to kernel PML4

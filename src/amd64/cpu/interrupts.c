@@ -29,7 +29,7 @@
 //----------------------------------------------------------------------------//
 
 cpu_int_entry_t cpu_int_idt[255];
-cpu_int_pointer_t cpu_int_pointer;
+uintptr_t cpu_int_handlers[255];
 
 //----------------------------------------------------------------------------//
 // Internal
@@ -58,8 +58,12 @@ extern uintptr_t _cpu_int_handlers[256];
 void cpu_int_init()
 {
     // Setup pointer
-    cpu_int_pointer.offset = (uintptr_t) &cpu_int_idt;
-    cpu_int_pointer.limit = (uint16_t) (256 * sizeof(cpu_int_entry_t) - 1);
+    cpu_int_pointer_t pointer;
+    pointer.offset = (uintptr_t) &cpu_int_idt;
+    pointer.limit = (uint16_t) (256 * sizeof(cpu_int_entry_t) - 1);
+    
+    // Clear handler function table
+    memset((void *) &cpu_int_handlers, 0, sizeof(uintptr_t) * 256);
     
     // Setup table
     memset((void *) &cpu_int_idt, 0, sizeof(cpu_int_entry_t) * 256);
@@ -78,15 +82,26 @@ void cpu_int_init()
     }
     
     // Load idt
-    _cpu_int_flush(cpu_int_pointer);
+    _cpu_int_flush(pointer);
 }
 
-void cpu_int_register(interrupt_vector vector, void (*handler)(interrupt_vector, void *))
+void cpu_int_register(interrupt_vector_t vector, interrupt_handler_t handler)
 {
-    
+    cpu_int_handlers[vector] = (uintptr_t) handler;
 }
 
-void _cpu_int_handler() {}
+void _cpu_int_handler(cpu_int_state_t regs)
+{
+    // Handler for vector?
+    interrupt_vector_t vector = regs.vector;
+    
+    if (0 == cpu_int_handlers[vector])
+        return;
+        
+    // Call handler
+    interrupt_handler_t handler = (interrupt_handler_t) cpu_int_handlers[vector];
+    (*handler)(vector, (void *) &regs);
+}
 
 //----------------------------------------------------------------------------//
 // Interruptable

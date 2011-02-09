@@ -24,6 +24,19 @@
 #include <amd64/memory/frame.h>
 #include <amd64/memory/page.h>
 #include <amd64/cpu.h>
+#include <api/cpu.h>
+#include <api/memory/page.h>
+
+void page_fault(interrupt_vector_t vector, void *regs)
+{
+    console_print("PF!");
+}
+
+void gp_fault(interrupt_vector_t vector, void *regs)
+{
+    console_print("GP!");
+    while (1);
+}
 
 void main()
 {

@@ -23,7 +23,8 @@
 // Interrupts
 //----------------------------------------------------------------------------//
 
-typedef uint8_t interrupt_vector;
+typedef uint8_t interrupt_vector_t;
+typedef void (*interrupt_handler_t)(interrupt_vector_t, void *);
 
 /**
  * Registers an interrupt handler for the given interrupt vector.
@@ -31,7 +32,7 @@ typedef uint8_t interrupt_vector;
  * @param vector The interrupt vector to register the handler for.
  * @param handler The interrupt handler to register.
  */
-void cpu_int_register(interrupt_vector vector, void (*handler)(interrupt_vector, void *));
+void cpu_int_register(interrupt_vector_t vector, interrupt_handler_t handler);
 
 //----------------------------------------------------------------------------//
 // Interruptable

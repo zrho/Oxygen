@@ -27,7 +27,7 @@
  * Initializes the frame manager with the given offset and length.
  *
  * @param offset The offset the frames begin on.
- * @param length The length framed area.
+ * @param length The length of the framed area.
  * @param storage A storage area allocated for the implementation's storage.
  */
 void frame_init(uintptr_t offset, uintptr_t length, void *storage);

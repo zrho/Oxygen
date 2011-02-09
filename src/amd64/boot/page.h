@@ -59,6 +59,7 @@
  *  * Mapping video memory (physical address 0xB8000, one page) to
  *    virtual an address of 0xFFFFFF7FFFFFF000
  *  * Mapping the boot info structure to 0xFFFFFF7FFFFFE000
+ *  * Mapping the GDT to 0xFFFFFF7FFFFFD000
  *  * Setting up recursive page mapping at an address of 0xFFFFFF8000000000
  *
  * @param infoAddress The physical address of the boot info structure.

@@ -78,13 +78,13 @@ boot:
     or eax, 1 << 31 | 1 << 0    ; PG and PM
     mov cr0, eax
     
-    ; Initialize GDT
-    call init_gdt
+    ; Loads the GDT
+    call load_gdt
 
     ; Perform a far jump to a 64 bit realm that does the actual jump to the
     ; kernel's entry point
     ;jmp $
-    jmp GDT64.Code:realm64
+    jmp 0x08:realm64
 
 ; Enables the A20 gate.
 enable_a20:
@@ -111,38 +111,38 @@ enable_long_mode:
 ; ------------------------------------------------------------------------------
 ; Global Descriptor Table
 ; ------------------------------------------------------------------------------
-[BITS 32]
 
-; Initializes the GDT
-init_gdt:
-    lgdt [GDT64.Pointer]
+; Loads the GDT
+load_gdt:
+    lgdt [_cpu_gdt_pointer]
     ret
 
 section .data
 
+[GLOBAL _cpu_gdt_gates]
+[GLOBAL _cpu_gdt_pointer]
+
+align 4096
+
 ; GDT for 64bit long mode
-GDT64:
-    .Null: equ $ - GDT64    ; Null descriptor
-    dw 0                    ; Limit (low)
-    dw 0                    ; Base (low)
-    db 0                    ; Base (middle)
-    db 0                    ; Access
-    db 0                    ; Granularity
-    db 0                    ; Base (high)
-    .Code: equ $ - GDT64    ; Code descriptor
-    dw 0
-    dw 0
-    db 0
-    db 10011000b
-    db 00100000b
-    db 0
-    .Data: equ $ - GDT64
-    dw 0
-    dw 0
-    db 0
-    db 10010000b
-    db 00000000b
-    db 0
-    .Pointer:
-    dw $ - GDT64 - 1
-    dd GDT64
+_cpu_gdt_gates:
+    .Null:
+        dd 0x0
+        dd 0x0
+    .KernelCode:
+        dd 0x0
+        dd 0x0
+    .KernelData:
+        dd 0x0
+        dd 0x0
+    .UserCode:
+        dd 0x0
+        dd 0x0
+    .UserData:
+        dd 0x0
+        dd 0x0
+    
+_cpu_gdt_pointer:
+    dw 0x0
+    dd 0x0
+    dd 0x0

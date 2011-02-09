@@ -20,6 +20,8 @@
 #include <api/memory/frame.h>
 #include <api/string.h>
 
+#include <api/debug/console.h>
+
 //----------------------------------------------------------------------------//
 // Variables
 //----------------------------------------------------------------------------//
@@ -36,16 +38,16 @@ static uintptr_t *frame_bitset;
 #define FRAME_SIZE 0x1000
 
 #define FRAME_OUT_OF_BOUNDS(a) (a < frame_offset || a > frame_offset + frame_length)
-#define FRAME_BITSET_SIZE (length / sizeof(uintptr_t) + 1)
+#define FRAME_BITSET_SIZE (frame_length / 0x1000 / sizeof(uintptr_t) + 1)
 
 #define FRAME_NUMBER(a) (a - frame_offset) / FRAME_SIZE
 #define FRAME_ADDRESS(n) (n * FRAME_SIZE + frame_offset)
 
-#define FRAME_INDEX(n) n / sizeof(uintptr_t)
-#define FRAME_OFFSET(n) n % sizeof(uintptr_t)
+#define FRAME_INDEX(n) (n / FRAME_MAX_OFFSET)
+#define FRAME_OFFSET(n) (n % FRAME_MAX_OFFSET)
 
-#define FRAME_MAX_INDEX frame_length / FRAME_SIZE
-#define FRAME_MAX_OFFSET sizeof(uintptr_t) * 8
+#define FRAME_MAX_INDEX (frame_length / FRAME_SIZE)
+#define FRAME_MAX_OFFSET (sizeof(uintptr_t) * 8)
 
 //----------------------------------------------------------------------------//
 // Implementation - Private
@@ -85,7 +87,7 @@ static uintptr_t _frame_find()
         if ((uintptr_t) (-1) != frame_bitset[index])
             // Check each frame
             for (offset = 0; offset < FRAME_MAX_OFFSET; ++offset)
-                if (0 != (frame_bitset[index] & (1 << offset)))
+                if (0 == (frame_bitset[index] & (1 << offset)))
                     // Get frame number
                     return index * FRAME_MAX_OFFSET + offset;
                     
@@ -112,7 +114,7 @@ void frame_mark_unavailable(uintptr_t frame)
     // Out of bounds?
     if (FRAME_OUT_OF_BOUNDS(frame))
         return;
-
+        
     // Mark as allocated
     _frame_set_alloc(FRAME_NUMBER(frame));
 }
@@ -124,7 +126,7 @@ uintptr_t frame_alloc()
     
     // Found one?
     if ((uintptr_t) (-1) != num) {
-        // Mark as free
+        // Mark as allocated
         _frame_set_alloc(num);
         
         // Return address

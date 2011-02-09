@@ -25,6 +25,7 @@
 #include <amd64/boot/info.h>
 #include <amd64/boot/loader.h>
 #include <amd64/boot/page.h>
+#include <amd64/boot/gdt.h>
 
 #include <api/debug/console.h>
 
@@ -111,6 +112,9 @@ void init(multiboot_info_t *mbi, uint32_t magic)
     
     info->entry_point = boot_load_kernel_elf64(
         placement, kernel->address, kernel->length);
+        
+    // Initialize GDT
+    cpu_gdt_init();
     
     // Create long mode trampoline
     console_print("[LOADER] Creating trampoline code at ");

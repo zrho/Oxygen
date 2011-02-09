@@ -83,6 +83,8 @@ static uint64_t *_boot_page_get(uint64_t virt)
 // Methods
 //----------------------------------------------------------------------------//
 
+extern uint8_t _cpu_gdt_gates;
+
 void boot_page_setup(uint64_t infoAddress)
 {
     // Create PML4 and clear subsequent memory
@@ -118,6 +120,10 @@ void boot_page_setup(uint64_t infoAddress)
 
     // Map boot info structure
     pt[510] = infoAddress | PG_PRESENT | PG_WRITABLE | PG_GLOBAL;
+    
+    // Map GDT
+    console_print_hex((uintptr_t) &_cpu_gdt_gates);
+    pt[509] = ((uintptr_t) &_cpu_gdt_gates) | PG_PRESENT | PG_GLOBAL;
 
     // Recursive page mapping
     pml4[511] = (uintptr_t) pml4;

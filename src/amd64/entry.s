@@ -27,11 +27,24 @@ entry:
     ; Setup stack
     mov rsp, stack_end
     
+    ; Load GDT
+    mov rdi, gdt_pointer
+    lgdt [rdi]
+    
     ; Call main
     call main
     
     ; Endless loop
     jmp $
+
+;-------------------------------------------------------------------------------
+; GDT
+;-------------------------------------------------------------------------------
+section .data
+
+gdt_pointer:
+    dw 0x27
+    dq 0xFFFFFF7FFFFFD000
 
 ;-------------------------------------------------------------------------------
 ; Stack

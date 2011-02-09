@@ -65,7 +65,7 @@ void frame_setup(boot_info_t *info, uint8_t *storage)
     size_t bitsetSize = frameNumber / 8 + 1;
     
     // Initialize frame bitset
-    frame_init(0x100000, bitsetSize, storage);
+    frame_init(0x100000, frameNumber * 0x1000, storage);
     
     // Mark every frame from 1MB to end of bitset as unavailable
     uintptr_t frame;

@@ -21,18 +21,16 @@
 #include <api/compiler.h>
 
 //----------------------------------------------------------------------------//
-// Registers
+// Interrupt - Structures
 //----------------------------------------------------------------------------//
 
-typedef struct cpu_registers_t
-{
+typedef struct cpu_int_state_t
+{ 
     uint64_t ds;
     uint64_t di, si, bp, sp, bx, dx, cx, ax;
-} PACKED cpu_registers_t;
-
-//----------------------------------------------------------------------------//
-// Interrupts
-//----------------------------------------------------------------------------//
+    uint64_t vector;
+    uint64_t error_code;
+} PACKED cpu_int_state_t;
 
 /**
  * An entry of the Interrupt Descriptor Table.
@@ -92,6 +90,10 @@ typedef struct cpu_int_pointer_t
     uint64_t offset;
     
 } PACKED cpu_int_pointer_t;
+
+//----------------------------------------------------------------------------//
+// Interrupt - Initialization
+//----------------------------------------------------------------------------//
 
 /**
  * Sets up interrupt handling.

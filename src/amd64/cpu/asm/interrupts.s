@@ -98,22 +98,22 @@ _cpu_int_handler_common:
     push rax
 
     xor rax, rax
-    mov ax, ds              ; Lower 16-bits of eax = ds.
+    mov ax, es              ; Lower 16-bits of eax = ds.
     push rax                ; save the data segment descriptor
 
-    mov ax, 0x10            ; load the kernel data segment descriptor
-    mov ds, ax
-    mov es, ax
-    mov fs, ax
-    mov gs, ax
+    ;mov ax, 0x10            ; load the kernel data segment descriptor
+    ;mov ds, ax
+    ;mov es, ax
+    ;mov fs, ax
+    ;mov gs, ax
 
     call _cpu_int_handler
 
     pop rbx                 ; Reload the original data segment descriptor
-    mov ds, bx
-    mov es, bx
-    mov fs, bx
-    mov gs, bx
+    ;mov ds, bx
+    ;mov es, bx
+    ;mov fs, bx
+    ;mov gs, bx
 
     pop rax
     pop rcx
@@ -124,7 +124,7 @@ _cpu_int_handler_common:
     pop rsi
     pop rdi
     
-    add rsp, 8              ; Cleans up the pushed error code and pushed ISR number
+    add rsp, 16             ; Cleans up the pushed error code and pushed ISR numbers
     iretq                   ; pops 5 things at once: CS, EIP, EFLAGS, SS, and ESP
     
 ;-------------------------------------------------------------------------------

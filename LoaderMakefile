@@ -17,6 +17,7 @@ OBJECT_FILES = \
     amd64/boot/init.o \
     amd64/boot/loader.o \
     amd64/boot/page.o \
+    amd64/boot/gdt.o \
     amd64/debug/console.o \
     amd64/io/io.o \
     common/debug/console.o \
