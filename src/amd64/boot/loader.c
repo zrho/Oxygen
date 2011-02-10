@@ -28,8 +28,11 @@ extern uint32_t mem_align32(uint32_t);
 // Methods
 //----------------------------------------------------------------------------//
 
-uint64_t boot_load_kernel_elf64(uintptr_t target, uint64_t address, uint64_t length)
+boot_load_result_t boot_load_kernel_elf64(uintptr_t target, uint64_t address, uint64_t length)
 {
+    // Backup target address
+    uint64_t target_bak = target;
+
     // Get ELF header
     Elf64_Ehdr *elf_hdr = (Elf64_Ehdr *) (uintptr_t) address;
     
@@ -101,5 +104,6 @@ uint64_t boot_load_kernel_elf64(uintptr_t target, uint64_t address, uint64_t len
     console_print("[ELF64] Binary loaded.\n");
     
     // Return entry point address
-    return elf_hdr->e_entry;
+    boot_load_result_t result = {elf_hdr->e_entry, target_bak, target};
+    return result;
 }

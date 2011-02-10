@@ -100,7 +100,6 @@ void init(multiboot_info_t *mbi, uint32_t magic)
     
     // Setup paging
     console_print("[LOADER] Setting up paging...\n");
-    
     boot_page_setup((uintptr_t) info);
     
     // Load the kernel
@@ -110,8 +109,9 @@ void init(multiboot_info_t *mbi, uint32_t magic)
     console_print_hex(placement);
     console_print("...\n");
     
-    info->entry_point = boot_load_kernel_elf64(
+    boot_load_result_t load_res = boot_load_kernel_elf64(
         placement, kernel->address, kernel->length);
+    info->entry_point = load_res.entry_point;
         
     // Initialize GDT
     cpu_gdt_init();
@@ -131,10 +131,9 @@ void init(multiboot_info_t *mbi, uint32_t magic)
     *trampoline_addr = (uint64_t) info->entry_point;
     
     // Relocate info structure
-    placement = mem_align(placement, 0x1000);
     boot_info_relocate(info, BOOT_INFO_VIRTUAL);
-    placement += 0x1000;
+    
     
     // Set beginning of usable memory
-    info->free_mem_begin = placement;
+    info->free_mem_begin = mem_align(load_res.mem_end, 0x1000);
 }

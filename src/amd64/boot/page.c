@@ -122,7 +122,6 @@ void boot_page_setup(uint64_t infoAddress)
     pt[510] = infoAddress | PG_PRESENT | PG_WRITABLE | PG_GLOBAL;
     
     // Map GDT
-    console_print_hex((uintptr_t) &_cpu_gdt_gates);
     pt[509] = ((uintptr_t) &_cpu_gdt_gates) | PG_PRESENT | PG_GLOBAL;
 
     // Recursive page mapping

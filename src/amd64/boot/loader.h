@@ -18,6 +18,17 @@
  
 #pragma once
 #include <api/types.h>
+
+//----------------------------------------------------------------------------//
+// Structures
+//----------------------------------------------------------------------------//
+ 
+typedef struct boot_load_result_t
+{
+    uint64_t entry_point;
+    uint64_t mem_begin;
+    uint64_t mem_end;
+} boot_load_result_t;
  
 //----------------------------------------------------------------------------//
 // Methods
@@ -32,4 +43,4 @@
  * @param length The length of the kernel binary.
  * @return Entry point address of the loaded kernel.
  */
-uint64_t boot_load_kernel_elf64(uintptr_t target, uint64_t address, uint64_t length);
+boot_load_result_t boot_load_kernel_elf64(uintptr_t target, uint64_t address, uint64_t length);
