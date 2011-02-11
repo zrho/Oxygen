@@ -5,6 +5,9 @@ BIN_DIR=build/loader
 CC=gcc
 CCFLAGS=-m32 \
     -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+    -Wall \
+    -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls \
+    -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings \
     -D__X86__ \
     -D__DEBUG__ \
     -x c \
