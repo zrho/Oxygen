@@ -21,10 +21,10 @@
 #include <api/cpu.h>
 
 //----------------------------------------------------------------------------//
-// Variables
+// Definitions
 //----------------------------------------------------------------------------//
 
-static bool spinlock_interrupt_state;
+#define SPINLOCK_FLAG_IRQ (1 << 0)
 
 //----------------------------------------------------------------------------//
 // Spinlock
@@ -40,19 +40,20 @@ void spinlock_acquire(spinlock_t *lock)
         cpu_set_interruptable(false);
         
     // Try to acquire lock
-    while (!__sync_bool_compare_and_swap(lock, false, true));
+    while (!__sync_bool_compare_and_swap(&lock->lock, false, true));
     
     // Store interrupt state
-    spinlock_interrupt_state = interruptsActive;
+    lock->flags = 0;
+    if (interruptsActive) lock->flags |= SPINLOCK_FLAG_IRQ;
 }
 
 void spinlock_release(spinlock_t *lock)
 {
     // Release lock
-    if (!__sync_bool_compare_and_swap(lock, true, false))
+    if (!__sync_bool_compare_and_swap(&lock->lock, true, false))
         return;
         
     // Restore interrupt state
-    if (spinlock_interrupt_state)
+    if (lock->flags & SPINLOCK_FLAG_IRQ)
         cpu_set_interruptable(true);
 }
