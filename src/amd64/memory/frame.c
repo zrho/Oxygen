@@ -19,9 +19,16 @@
 #include <api/types.h>
 #include <api/boot/info.h>
 #include <api/memory/frame.h>
+#include <api/memory/page.h>
 #include <amd64/memory/frame.h>
-
 #include <api/debug/console.h>
+
+//----------------------------------------------------------------------------//
+// Variables
+//----------------------------------------------------------------------------//
+
+uintptr_t frame_bitset_size;
+uintptr_t frame_bitset_addr;
 
 //----------------------------------------------------------------------------//
 // Internal
@@ -62,14 +69,15 @@ void frame_setup(boot_info_t *info, uint8_t *storage)
     
     // Calculate number of frames and size of bitset
     size_t frameNumber = (physMemsz - 0x100000) / 0x1000;
-    size_t bitsetSize = frameNumber / 8 + 1;
+    frame_bitset_size = frameNumber / 8 + 1;
+    frame_bitset_addr = (uintptr_t) storage;
     
     // Initialize frame bitset
     frame_init(0x100000, frameNumber * 0x1000, storage);
     
     // Mark every frame from 1MB to end of bitset as unavailable
     uintptr_t frame;
-    uintptr_t end_of_bitset = mem_align((uintptr_t) storage + bitsetSize, 0x1000);
+    uintptr_t end_of_bitset = mem_align((uintptr_t) storage + frame_bitset_size, 0x1000);
     
     for (frame = 0x100000; frame < end_of_bitset; frame += 0x1000)
         frame_mark_unavailable(frame);
@@ -93,4 +101,20 @@ void frame_setup(boot_info_t *info, uint8_t *storage)
         // Next
         mmap = (boot_info_mmap_t *) mmap->next;
     }
+}
+
+void frame_setup_relocate()
+{
+    // Map memory dedicated to bitset
+    uintptr_t offset;
+    
+    for (offset = 0; offset < frame_bitset_size; offset += 0x1000)
+        page_map(
+            FRAME_BITSET_VIRTUAL + offset,
+            frame_bitset_addr + offset,
+            PG_PRESENT | PG_GLOBAL | PG_WRITABLE);
+            
+    // Relocate frame bitset
+    frame_bitset_addr = FRAME_BITSET_VIRTUAL;
+    frame_relocate(FRAME_BITSET_VIRTUAL);
 }

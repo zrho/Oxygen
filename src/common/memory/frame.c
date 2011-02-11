@@ -82,7 +82,7 @@ static uintptr_t _frame_find()
 {
     uintptr_t index, offset;
     
-    for (index = 0; index < FRAME_MAX_INDEX; ++index)
+    for (index = 0; index < FRAME_MAX_INDEX; ++index) {
         // Whole bunch allocated?
         if ((uintptr_t) (-1) != frame_bitset[index])
             // Check each frame
@@ -90,6 +90,7 @@ static uintptr_t _frame_find()
                 if (0 == (frame_bitset[index] & (1 << offset)))
                     // Get frame number
                     return index * FRAME_MAX_OFFSET + offset;
+    }
                     
     return (uintptr_t) (-1);
 }
@@ -97,6 +98,11 @@ static uintptr_t _frame_find()
 //----------------------------------------------------------------------------//
 // Implementation - Public
 //----------------------------------------------------------------------------//
+
+void frame_relocate(uintptr_t virt)
+{
+    frame_bitset = (uintptr_t *) virt;
+}
 
 void frame_init(uintptr_t offset, uintptr_t length, void *storage)
 {

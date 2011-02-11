@@ -62,3 +62,8 @@
  * @param phys Physical address of the system's paging strucutures.
  */
 void page_init(uintptr_t virt, uintptr_t phys);
+
+/**
+ * Unmaps the low memory when its not required any longer.
+ */
+void page_unmap_low();

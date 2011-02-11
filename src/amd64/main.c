@@ -26,23 +26,25 @@
 #include <amd64/cpu.h>
 #include <api/cpu.h>
 #include <api/memory/page.h>
+#include <api/memory/heap.h>
+#include <api/string.h>
 
 void page_fault(interrupt_vector_t vector, void *regs)
 {
     console_print("PF!");
+    while (1);
 }
 
 void gp_fault(interrupt_vector_t vector, void *regs)
 {
     console_print("GP!");
-    while (1);
 }
 
 void main()
 {
     // Relocate video memory
     console_memory_relocate(CONSOLE_MEM_VIRTUAL);
-    
+
     // Clear screen
     console_clear();
     
@@ -72,14 +74,19 @@ void main()
     
     // Set up frame heap
     console_print("Initializing frame heap...\n");
-    frame_setup(info, (void *) info->free_mem_begin);
+    frame_setup(info, (void *) mem_align(info->free_mem_begin, 0x1000));
     
     // Initialize paging
     console_print("Initializing paging...\n");
     uintptr_t pml4 = cpu_get_cr3();
     page_init(pml4, pml4);
     
+    // Relocate frame bitset
+    frame_setup_relocate();
+    page_unmap_low();
+    
     // Initialize interrupts
     console_print("Initializing interrupts...\n");
     cpu_int_init();
+    cpu_int_register(14, &page_fault);
 }

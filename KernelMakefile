@@ -20,9 +20,11 @@ OBJECT_FILES = \
     amd64/io/io.o \
     amd64/memory/frame.o \
     amd64/memory/page.o \
+    amd64/memory/heap.o \
     amd64/sync/spinlock.o \
     amd64/cpu/interrupts.o \
     amd64/cpu/asm/interrupts.o \
+    common/memory/dlmalloc.o \
     common/debug/console.o \
     common/memory/frame.o \
     common/memory/mem_align.o \

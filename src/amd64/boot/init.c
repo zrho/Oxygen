@@ -133,7 +133,6 @@ void init(multiboot_info_t *mbi, uint32_t magic)
     // Relocate info structure
     boot_info_relocate(info, BOOT_INFO_VIRTUAL);
     
-    
     // Set beginning of usable memory
     info->free_mem_begin = mem_align(load_res.mem_end, 0x1000);
 }

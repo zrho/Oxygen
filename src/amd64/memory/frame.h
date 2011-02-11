@@ -20,6 +20,8 @@
 #include <api/types.h>
 #include <api/boot/info.h>
 
+#define FRAME_BITSET_VIRTUAL 0xFFFFFF7F80000000
+
 //----------------------------------------------------------------------------//
 // Setup
 //----------------------------------------------------------------------------//
@@ -34,3 +36,9 @@
  * @param storage Storage location for the bitset.
  */
 void frame_setup(boot_info_t *info, uint8_t *storage);
+
+/**
+ * Second stage of frame allocator initialization that moves the frame bitset
+ * from low to high memory.
+ */
+void frame_setup_relocate();

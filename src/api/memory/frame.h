@@ -42,6 +42,13 @@ void frame_init(uintptr_t offset, uintptr_t length, void *storage);
  */
 void frame_mark_unaviable(uintptr_t frame);
 
+/**
+ * Changes the address of the internal structures.
+ *
+ * @param virt The new virtual address of the structures.
+ */
+void frame_relocate(uintptr_t virt);
+
 //----------------------------------------------------------------------------//
 // Alloc and free
 //----------------------------------------------------------------------------//

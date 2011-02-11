@@ -217,13 +217,16 @@ void page_init(uintptr_t virt, uintptr_t phys)
     page_t *last_pdp = (page_t *) (virt + 8 * 511);
     _page_map(last_pdp, phys, PAGE_FLAGS_RECURSIVE);
     
+    // Clear complete TLB by rewriting CR3
+    _page_switch_space(page_kernel_pml4);
+}
+
+void page_unmap_low()
+{
     // Unmap low virtual memory (first PDP)
     // Assumes that the GLOBAL flag is not set for these pages, i.e. they are
     // removed from TLB at the next write to CR3.
-    _page_unmap((page_t *) virt);
-    
-    // Clear complete TLB by rewriting CR3
-    _page_switch_space(page_kernel_pml4);
+    _page_unmap((page_t *) PAGE_VIRT_PML4E(0));
 }
 
 //----------------------------------------------------------------------------//
@@ -272,7 +275,7 @@ void page_unmap(uintptr_t virt)
 
 uintptr_t page_get_physical(uintptr_t virt)
 {
-    // Acquire lock
+    // Acquire lock    
     spinlock_acquire(&page_lock);
 
     // Align (down) virtual address
