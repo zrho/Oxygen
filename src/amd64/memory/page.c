@@ -32,8 +32,7 @@
 // Variables
 //----------------------------------------------------------------------------//
 
-static spinlock_t page_lock;
-
+static SPINLOCK_INIT(page_lock);
 static uintptr_t page_kernel_pdp;
 static uintptr_t page_kernel_pml4;
 

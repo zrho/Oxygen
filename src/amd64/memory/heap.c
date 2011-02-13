@@ -31,7 +31,7 @@
 
 uintptr_t heap_begin = 0xFFFFFF0080000000;
 uintptr_t heap_length = 0;
-spinlock_t heap_lock = 0;
+SPINLOCK_INIT(heap_lock);
 
 //------------------------------------------------------------------------------
 // Heap - Advanced

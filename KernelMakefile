@@ -52,7 +52,8 @@ $(BIN_DIR)/%.o: $(SOURCE_DIR)/%.s
 # Links the binary
 .PHONY: link
 link:
-	$(LD) $(LDFLAGS) -T link/amd64/kernel.ld -o $(BIN_DIR)/kernel64.bin $(OBJECT_PATHS)
+	$(LD) $(LDFLAGS) -m elf_x86_64 -T link/amd64/kernel.ld \
+	-o $(BIN_DIR)/kernel64.bin $(OBJECT_PATHS)
     
 # Builds the object files
 build: $(OBJECT_PATHS)
