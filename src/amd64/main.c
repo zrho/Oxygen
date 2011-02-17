@@ -24,23 +24,20 @@
 #include <amd64/memory/frame.h>
 #include <amd64/memory/page.h>
 #include <amd64/cpu.h>
-#include <api/cpu.h>
+#include <api/cpu/int.h>
+#include <amd64/cpu/int.h>
 #include <api/memory/page.h>
 #include <api/memory/heap.h>
 #include <api/string.h>
+#include <amd64/info/acpi.h>
 
-void page_fault(interrupt_vector_t vector, void *regs)
+void pg_fault(uint8_t vector, void *ctx)
 {
     console_print("PF!");
-    while (1);
+    while(1);
 }
 
-void gp_fault(interrupt_vector_t vector, void *regs)
-{
-    console_print("GP!");
-}
-
-void main()
+int main()
 {
     // Relocate video memory
     console_memory_relocate(CONSOLE_MEM_VIRTUAL);
@@ -49,10 +46,10 @@ void main()
     console_clear();
     
     // Print header
-    int8_t *spacer = "-------------------------------------------------------------------------------";
+    int8_t *spacer = (int8_t *) "-------------------------------------------------------------------------------";
     
     console_print(spacer);
-    console_print("\nOxygen Microkernel\n");
+    console_print("\nOxygen Microkernel (AMD64)\n");
     console_print("Copyright (c) 2011 by Lukas Heidemann <lukasheidemann@aim.com>\n");
     console_print(spacer);
     console_print("\n");
@@ -73,11 +70,11 @@ void main()
     console_print("\n");
     
     // Set up frame heap
-    console_print("Initializing frame heap...\n");
+    console_print("[CORE] Initializing frame heap...\n");
     frame_setup(info, (void *) mem_align(info->free_mem_begin, 0x1000));
     
     // Initialize paging
-    console_print("Initializing paging...\n");
+    console_print("[CORE] Initializing paging...\n");
     uintptr_t pml4 = cpu_get_cr3();
     page_init(pml4, pml4);
     
@@ -86,7 +83,20 @@ void main()
     page_unmap_low();
     
     // Initialize interrupts
-    console_print("Initializing interrupts...\n");
+    console_print("[CORE] Initializing interrupts...\n");
     cpu_int_init();
-    cpu_int_register(14, &page_fault);
+    cpu_int_register(14, &pg_fault);
+    
+    // Parse ACPI tables and create sysinfo structure
+    console_print("[INFO] Parsing ACPI tables...\n");
+    acpi_parse();
+    
+    // Print some information found in the ACPI tables...
+    console_print("[INFO] Processors: ");
+    console_print_hex(cpu_count());
+    console_print("\n[INFO] LAPIC Physical Address: ");
+    console_print_hex(cpu_get_lapic());
+    console_print("\n");
+    
+    return 0;
 }

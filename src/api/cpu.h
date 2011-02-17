@@ -67,6 +67,11 @@ typedef struct cpu_t
      */
     uint8_t flags;
     
+    /**
+     * Pointer to the next CPU.
+     */
+    struct cpu_t *next;
+    
 } cpu_t;
 
 //------------------------------------------------------------------------------
@@ -82,15 +87,11 @@ typedef struct cpu_t
 cpu_t *cpu_get(cpu_id_t id);
 
 /**
- * Returns a pointer to a CPU, given its index.
+ * Returns a pointer to the first CPU in the linked list of CPUs.
  *
- * All CPUs will receive a continuous, unique and ascending index for iteration
- * that begins at 0.
- *
- * @param idx The CPU's index.
- * @return Pointer to the CPU or a null-pointer.
+ * @return Pointer to the first CPU.
  */
-cpu_t *cpu_get_idx(size_t idx);
+cpu_t *cpu_get_first();
 
 /**
  * Returns the number of CPUs installed into the system.

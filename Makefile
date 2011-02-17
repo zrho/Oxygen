@@ -7,7 +7,7 @@ export SOURCE_DIR=src
 
 # EMU
 export EMU=qemu
-export EMUFLAGS = -monitor stdio -m 32M
+export EMUFLAGS = -monitor stdio -m 32M -smp 4
 
 # LD (Default)
 export LD=ld

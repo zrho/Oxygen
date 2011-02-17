@@ -16,63 +16,85 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 #include <api/types.h>
 #include <api/compiler.h>
 #include <api/cpu.h>
+#include <api/string.h>
+
+#include <api/memory/heap.h>
+
+#include <amd64/cpu.h>
+
+#include <api/debug/console.h>
 
 //----------------------------------------------------------------------------//
-// CPU - API
+// CPU - Variables
 //----------------------------------------------------------------------------//
 
-/**
- * Adds a detected CPU.
- *
- * @param cpu The CPU to add.
- */
-void cpu_add(cpu_t cpu);
+static cpu_t *cpu_first = 0;
+static cpu_t *cpu_last = 0;
+static size_t cpu_list_len = 0;
+static uintptr_t cpu_lapic_addr = 0;
 
 //----------------------------------------------------------------------------//
 // CPU - LAPIC
 //----------------------------------------------------------------------------//
 
-/**
- * Sets the physical address of the LAPIC.
- *
- * @param addr The address of the LAPIC.
- */
-void cpu_set_lapic(uintptr_t addr);
+void cpu_set_lapic(uintptr_t addr)
+{
+    cpu_lapic_addr = addr;
+}
 
-/**
- * Returns the physical address of the LAPIC.
- *
- * @return The address of the LAPIC.
- */
-uintptr_t cpu_get_lapic();
+uintptr_t cpu_get_lapic()
+{
+    return cpu_lapic_addr;
+}
 
 //----------------------------------------------------------------------------//
-// CPU - LAPIC Registers
+// CPU - API
 //----------------------------------------------------------------------------//
 
-#define LAPIC_ID_OFFSET         0x20
-#define LAPIC_VERSION_OFFSET    0x30
-#define LAPIC_IRR_OFFSET        0x200
-#define LAPIC_ICR_OFFSET        0x300
+void cpu_add(cpu_t cpu)
+{
+    // Increase list length
+    ++cpu_list_len;
 
-//----------------------------------------------------------------------------//
-// CPU - Control registers
-//----------------------------------------------------------------------------//
+    // Copy cpu structure
+    cpu_t *_cpu = (cpu_t *) malloc(sizeof(cpu_t));
+    memcpy(_cpu, &cpu, sizeof(cpu_t));
 
-/**
- * Sets the value of the <tt>CR3</tt> register.
- *
- * @param cr3 New value for the register.
- */
-void cpu_set_cr3(uintptr_t cr3);
+    // Add to cpu list
+    if (0 == cpu_first)
+        cpu_first = cpu_last = _cpu;
+        
+    else {
+        cpu_last->next = _cpu;
+        cpu_last = _cpu;
+    }
+}
 
-/**
- * Returns the value of the <tt>CR3</tt> register.
- *
- * @return The value of the register.
- */
-uintptr_t cpu_get_cr3();
+cpu_t *cpu_get(cpu_id_t id)
+{
+    cpu_t *current = cpu_get_first();
+    
+    while (0 != current) {
+        // CPU we're looking for?
+        if (id == current->id)
+            return current;
+            
+        // Next one
+        current = current->next;
+    }
+    
+    return 0;
+}
+
+cpu_t *cpu_get_first()
+{
+    return cpu_first;
+}
+
+size_t cpu_count()
+{
+    return cpu_list_len;
+}
