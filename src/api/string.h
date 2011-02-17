@@ -79,3 +79,12 @@ void memset(void *dest, uint8_t c, size_t length);
  * @return The aligned address.
  */
 uintptr_t mem_align(uintptr_t address, size_t boundary);
+
+/**
+ * Compares <tt>len</tt> bytes pointed to my the given pointers.
+ *
+ * @param a First memory chunk.
+ * @param b Second memory chunk.
+ * @param len Length of memory chunk to compare.
+ */
+bool memcmp(void *a, void *b, size_t len);

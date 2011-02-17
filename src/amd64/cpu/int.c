@@ -17,12 +17,15 @@
  */
 
 #include <api/types.h>
-#include <api/cpu.h>
-#include <api/memory/page.h>
 #include <api/string.h>
-#include <amd64/cpu.h>
+
+#include <api/cpu/int.h>
+
+#include <api/memory/page.h>
 
 #include <api/debug/console.h>
+
+#include <amd64/cpu/int.h>
 
 //----------------------------------------------------------------------------//
 // Variables

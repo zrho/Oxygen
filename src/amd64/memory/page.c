@@ -18,12 +18,14 @@
 
 #include <api/types.h>
 #include <api/string.h>
+
 #include <api/memory/page.h>
 #include <api/memory/frame.h>
+
 #include <api/sync/spinlock.h>
-#include <api/cpu.h>
 
 #include <amd64/cpu.h>
+
 #include <amd64/memory/page.h>
 
 #include <api/debug/console.h>

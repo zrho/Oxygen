@@ -19,38 +19,82 @@
 #pragma once
 #include <api/types.h>
 
-//----------------------------------------------------------------------------//
-// Interrupts
-//----------------------------------------------------------------------------//
-
-typedef uint8_t interrupt_vector_t;
-typedef void (*interrupt_handler_t)(interrupt_vector_t, void *);
+//------------------------------------------------------------------------------
+// CPU - Types
+//------------------------------------------------------------------------------
 
 /**
- * Registers an interrupt handler for the given interrupt vector.
- *
- * @param vector The interrupt vector to register the handler for.
- * @param handler The interrupt handler to register.
+ * The id of a CPU.
  */
-void cpu_int_register(interrupt_vector_t vector, interrupt_handler_t handler);
+typedef uint8_t cpu_id_t;
 
-//----------------------------------------------------------------------------//
-// Interruptable
-//----------------------------------------------------------------------------//
+//------------------------------------------------------------------------------
+// CPU - Flags
+//------------------------------------------------------------------------------
 
 /**
- * Checks whether the CPU is currently interruptable by non-critical interrupt
- * requests.
+ * CPU Flag (Value 1).
  *
- * @return Whether the CPU is interruptable.
+ * Whether the CPU is enabled. Disabled CPUs can and should NOT be used. Not
+ * equal to halting/sleeping state.
  */
-bool cpu_is_interruptable();
+#define CPU_FLAG_ENABLED    (1 << 0)
 
 /**
- * Sets whether or not the CPU shall be interruptable by non-critical interrupt
- * requests.
+ * CPU Flag (Value 2).
  *
- * @param flag <tt>true</tt> if the CPU shall be interruptable, <tt>false</tt>
- *  otherwise.
+ * Whether the CPU is the BootStrap Processor, i.e. the processor that started
+ * the system.
  */
-void cpu_set_interruptable(bool flag);
+#define CPU_FLAG_BSP        (1 << 0)
+
+//------------------------------------------------------------------------------
+// CPU - Structures
+//------------------------------------------------------------------------------
+
+/**
+ * Structure representing a CPU installed into the system.
+ */
+typedef struct cpu_t
+{
+    /**
+     * The CPU's id.
+     */
+    cpu_id_t id;
+    
+    /**
+     * The CPU's flags.
+     */
+    uint8_t flags;
+    
+} cpu_t;
+
+//------------------------------------------------------------------------------
+// CPU - API
+//------------------------------------------------------------------------------
+
+/**
+ * Returns a pointer to a CPU, given its id.
+ *
+ * @param id The id of the CPU.
+ * @return Pointer to the CPU or a null-pointer.
+ */
+cpu_t *cpu_get(cpu_id_t id);
+
+/**
+ * Returns a pointer to a CPU, given its index.
+ *
+ * All CPUs will receive a continuous, unique and ascending index for iteration
+ * that begins at 0.
+ *
+ * @param idx The CPU's index.
+ * @return Pointer to the CPU or a null-pointer.
+ */
+cpu_t *cpu_get_idx(size_t idx);
+
+/**
+ * Returns the number of CPUs installed into the system.
+ *
+ * @return Number of CPUs.
+ */
+size_t cpu_count();

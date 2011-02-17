@@ -18,7 +18,7 @@
  
 #include <api/types.h>
 #include <api/sync/spinlock.h>
-#include <api/cpu.h>
+#include <api/cpu/int.h>
 
 //----------------------------------------------------------------------------//
 // Definitions
