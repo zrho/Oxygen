@@ -21,6 +21,15 @@
 #include <api/compiler.h>
 
 //----------------------------------------------------------------------------//
+// Interrupt - Vectors
+//----------------------------------------------------------------------------//
+
+#define INT_PIC_IRQ_OFFSET          0x40
+#define INT_VECTOR_APIC_ERROR       0x21
+#define INT_VECTOR_TIMER            0x31
+#define INT_VECTOR_TIMER_HELPER     0x32
+
+//----------------------------------------------------------------------------//
 // Interrupt - Structures
 //----------------------------------------------------------------------------//
 
@@ -98,4 +107,4 @@ typedef struct cpu_int_pointer_t
 /**
  * Sets up interrupt handling.
  */
-void cpu_int_init();
+void cpu_int_init(void);

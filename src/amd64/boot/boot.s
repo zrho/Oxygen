@@ -41,6 +41,7 @@ MultiBootHeader:
 ; Entry point
 ; ------------------------------------------------------------------------------
 section .text
+%include "amd64/boot/long.s"
 
 [GLOBAL boot]
 [EXTERN init]
@@ -58,13 +59,13 @@ boot:
     push ebx    ; Info structure
 
     ; Enable A20 gate
-    call enable_a20
+    ENABLE_A20
 
     ; Enable PAE
-    call enable_pae
+    ENABLE_PAE
 
     ; Enable long mode
-    call enable_long_mode
+    ENABLE_LONG_MODE
 
     ; Call C initialization code
     call init
@@ -86,28 +87,6 @@ boot:
     ;jmp $
     jmp 0x08:realm64
 
-; Enables the A20 gate.
-enable_a20:
-    in al, 0x92
-    or al, 2
-    out 0x92, al
-    ret
-
-; Sets PAE bit in CR4
-enable_pae:
-    mov eax, cr4
-    or eax, 1 << 5
-    mov cr4, eax
-    ret
-
-; Sets long mode bit in EFER MSR
-enable_long_mode:
-    mov ecx, 0xC0000080
-    rdmsr
-    or eax, 1 << 8
-    wrmsr
-    ret
-    
 ; ------------------------------------------------------------------------------
 ; Global Descriptor Table
 ; ------------------------------------------------------------------------------

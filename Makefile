@@ -15,11 +15,11 @@ export LDFLAGS=-z max-page-size=0x1000
 
 # ASM32
 export ASM32 = nasm
-export ASM32FLAGS = -f elf32
+export ASM32FLAGS = -f elf32 -i src/
 
 # ASM64
 export ASM64 = nasm
-export ASM64FLAGS = -f elf64
+export ASM64FLAGS = -f elf64 -i src/
 
 # Builds all subprojects
 .PHONY: all

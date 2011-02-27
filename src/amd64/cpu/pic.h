@@ -15,44 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
 #pragma once
 #include <api/types.h>
-#include <api/compiler.h>
-#include <api/cpu.h>
 
 //----------------------------------------------------------------------------//
-// CPU - API
+// PIC
 //----------------------------------------------------------------------------//
 
 /**
- * Adds a detected CPU.
- *
- * @param cpu The CPU to add.
+ * Initializes the PIC by remapping the IRQs.
  */
-void cpu_add(cpu_t cpu);
+void cpu_pic_init(void);
 
 /**
- * Initializes the BSP and all enabled APs.
+ * Issues an EOI for the IRQ of the given number.
  *
- * Only to be called once on the BSP.
+ * @param irq The number of the IRQ to send an EOI for.
  */
-void cpu_startup(void);
-
-//----------------------------------------------------------------------------//
-// CPU - Control registers
-//----------------------------------------------------------------------------//
+void cpu_pic_eoi(uint8_t irq);
 
 /**
- * Sets the value of the <tt>CR3</tt> register.
+ * Masks the given IRQ.
  *
- * @param cr3 New value for the register.
+ * @param irq The number of the IRQ to mask.
  */
-void cpu_set_cr3(uintptr_t cr3);
+void cpu_pic_mask(uint8_t irq);
 
 /**
- * Returns the value of the <tt>CR3</tt> register.
+ * Unmasks the given IRQ.
  *
- * @return The value of the register.
+ * @param irq The number of the IRQ to unmask.
  */
-uintptr_t cpu_get_cr3(void);
+void cpu_pic_unmask(uint8_t irq);
+
+/**
+ * Disables the PIC.
+ */
+void cpu_pic_disable(void);

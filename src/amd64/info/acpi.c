@@ -33,6 +33,8 @@
 
 #include <amd64/cpu.h>
 
+#include <amd64/cpu/lapic.h>
+
 //----------------------------------------------------------------------------//
 // ACPI - Constants
 //----------------------------------------------------------------------------//
@@ -227,7 +229,7 @@ static void _acpi_parse_madt_io_apic(acpi_madt_io_apic_t *apic_tbl)
 static void _acpi_parse_madt(acpi_madt_t *madt)
 {
     // Store LAPIC address
-    cpu_set_lapic(madt->lapic_addr);
+    cpu_lapic_set(madt->lapic_addr);
     
     // Iterate over tables
     void *current = (void *) ((uintptr_t) madt + sizeof(acpi_madt_t));
@@ -274,8 +276,8 @@ void acpi_parse()
         header = (acpi_sdt_header_t *) _acpi_tmp_map((uintptr_t) header, length);
         
         // Check on table's parse
-        if (memcmp((int8_t *) header->signature, "APIC", 4) ||
-            memcmp((int8_t *) header->signature, "MADT", 4))
+        if (memcmp((int8_t *) header->signature, (void *) "APIC", 4) ||
+            memcmp((int8_t *) header->signature, (void *) "MADT", 4))
             _acpi_parse_madt((acpi_madt_t *) header);
             
         // Unmap

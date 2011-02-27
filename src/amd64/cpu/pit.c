@@ -15,58 +15,60 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#pragma once
+ 
 #include <api/types.h>
+#include <amd64/cpu/pic.h>
+#include <amd64/cpu/pit.h>
+#include <amd64/io/io.h>
 
 //----------------------------------------------------------------------------//
-// Interrupts - Types
-//----------------------------------------------------------------------------//
-
-/**
- * An interrupt vector.
- *
- * A number (for 0 < n < 255) that identifies one type of interrupt.
- */
-typedef uint8_t interrupt_vector_t;
-
-//----------------------------------------------------------------------------//
-// Interrupts - Handling
+// PIT - Variable
 //----------------------------------------------------------------------------//
 
 /**
- * An interrupt handler.
- *
- * @param The vector of the interrupt.
- * @param A platform-specific context structure.
+ * The last known frequency of the PIT (in Hz).
  */
-typedef void (*interrupt_handler_t)(interrupt_vector_t, void *);
-
-/**
- * Registers an interrupt handler for the given interrupt vector.
- *
- * @param vector The interrupt vector to register the handler for.
- * @param handler The interrupt handler to register.
- */
-void cpu_int_register(interrupt_vector_t vector, interrupt_handler_t handler);
+static uint32_t cpu_pit_freq = 0;
 
 //----------------------------------------------------------------------------//
-// Interrupts - State
+// PIT - Constants
 //----------------------------------------------------------------------------//
 
-/**
- * Checks whether the CPU is currently interruptable by non-critical interrupt
- * requests.
- *
- * @return Whether the CPU is interruptable.
- */
-bool cpu_is_interruptable(void);
+#define IO_PIT_COMMAND          0x43
+#define IO_PIT_DATA             0x40
+#define IO_PIT_COMMAND_FREQ     0x36
 
-/**
- * Sets whether or not the CPU shall be interruptable by non-critical interrupt
- * requests.
- *
- * @param flag <tt>true</tt> if the CPU shall be interruptable, <tt>false</tt>
- *  otherwise.
- */
-void cpu_set_interruptable(bool flag);
+//----------------------------------------------------------------------------//
+// PIT
+//----------------------------------------------------------------------------//
+
+void cpu_pit_freq_set(uint32_t frequency)
+{
+    // Set frequency
+    cpu_pit_freq = frequency;
+
+    // Calculate divisor
+    uint32_t divisor = PIT_FREQ_MAX / frequency;
+    uint8_t divLow = (uint8_t) (divisor & 0xFF);
+    uint8_t divHigh = (uint8_t) ((divisor >> 8) & 0xFF);
+    
+    // Adjust frequency
+    io_outb(IO_PIT_COMMAND, IO_PIT_COMMAND_FREQ);
+    io_outb(IO_PIT_DATA, divLow);
+    io_outb(IO_PIT_DATA, divHigh);
+}
+
+uint32_t cpu_pit_freq_get(void)
+{
+    return cpu_pit_freq;
+}
+
+void cpu_pit_enable(void)
+{
+    cpu_pic_unmask(PIT_IRQ);
+}
+
+void cpu_pit_disable(void)
+{
+    cpu_pic_mask(PIT_IRQ);
+}

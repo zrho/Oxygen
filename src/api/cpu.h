@@ -18,6 +18,7 @@
 
 #pragma once
 #include <api/types.h>
+#include <api/sync/spinlock.h>
 
 //------------------------------------------------------------------------------
 // CPU - Types
@@ -68,6 +69,11 @@ typedef struct cpu_t
     uint8_t flags;
     
     /**
+     * The CPU's lock.
+     */
+    spinlock_t lock;
+    
+    /**
      * Pointer to the next CPU.
      */
     struct cpu_t *next;
@@ -87,15 +93,22 @@ typedef struct cpu_t
 cpu_t *cpu_get(cpu_id_t id);
 
 /**
+ * Returns the id of the CPU calling this function.
+ *
+ * @return Current CPU's id.
+ */
+cpu_id_t cpu_current_id(void);
+
+/**
  * Returns a pointer to the first CPU in the linked list of CPUs.
  *
  * @return Pointer to the first CPU.
  */
-cpu_t *cpu_get_first();
+cpu_t *cpu_get_first(void);
 
 /**
  * Returns the number of CPUs installed into the system.
  *
  * @return Number of CPUs.
  */
-size_t cpu_count();
+size_t cpu_count(void);

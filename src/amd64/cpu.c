@@ -22,8 +22,17 @@
 #include <api/string.h>
 
 #include <api/memory/heap.h>
+#include <api/memory/page.h>
 
 #include <amd64/cpu.h>
+#include <amd64/cpu/int.h>
+#include <amd64/cpu/pic.h>
+#include <amd64/cpu/lapic.h>
+#include <amd64/cpu/timer.h>
+
+#include <amd64/io/io.h>
+
+#include <api/cpu/int.h>
 
 #include <api/debug/console.h>
 
@@ -34,25 +43,32 @@
 static cpu_t *cpu_first = 0;
 static cpu_t *cpu_last = 0;
 static size_t cpu_list_len = 0;
-static uintptr_t cpu_lapic_addr = 0;
-
-//----------------------------------------------------------------------------//
-// CPU - LAPIC
-//----------------------------------------------------------------------------//
-
-void cpu_set_lapic(uintptr_t addr)
-{
-    cpu_lapic_addr = addr;
-}
-
-uintptr_t cpu_get_lapic()
-{
-    return cpu_lapic_addr;
-}
 
 //----------------------------------------------------------------------------//
 // CPU - API
 //----------------------------------------------------------------------------//
+
+void cpu_startup(void)
+{
+    // Mark current processor as BSP
+    cpu_t *bsp = cpu_get(cpu_current_id());
+    bsp->flags |= CPU_FLAG_BSP;
+    
+    // Initialize PIC
+    cpu_pic_init();
+    
+    // Enable IRQs
+    cpu_set_interruptable(true);
+    
+    // Enable the BSP's LAPIC
+    cpu_lapic_enable();
+    
+    // Initialize timer
+    cpu_timer_init();
+    
+    // Disable PIC
+    cpu_pic_disable();
+}
 
 void cpu_add(cpu_t cpu)
 {
@@ -66,7 +82,6 @@ void cpu_add(cpu_t cpu)
     // Add to cpu list
     if (0 == cpu_first)
         cpu_first = cpu_last = _cpu;
-        
     else {
         cpu_last->next = _cpu;
         cpu_last = _cpu;
@@ -89,12 +104,17 @@ cpu_t *cpu_get(cpu_id_t id)
     return 0;
 }
 
-cpu_t *cpu_get_first()
+cpu_t *cpu_get_first(void)
 {
     return cpu_first;
 }
 
-size_t cpu_count()
+size_t cpu_count(void)
 {
     return cpu_list_len;
+}
+
+cpu_id_t cpu_current_id(void)
+{
+    return *((uint8_t *) (LAPIC_VIRTUAL_ADDR + LAPIC_ID_OFFSET));
 }

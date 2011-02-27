@@ -110,7 +110,7 @@ void _cpu_int_handler(cpu_int_state_t regs)
 // Interruptable
 //----------------------------------------------------------------------------//
 
-bool cpu_is_interruptable()
+bool cpu_is_interruptable(void)
 {
     // Check IF in flags
     size_t flag;

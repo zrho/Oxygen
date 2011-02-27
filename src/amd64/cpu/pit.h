@@ -15,44 +15,48 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
 #pragma once
 #include <api/types.h>
-#include <api/compiler.h>
-#include <api/cpu.h>
 
 //----------------------------------------------------------------------------//
-// CPU - API
+// PIT - Constants
 //----------------------------------------------------------------------------//
 
 /**
- * Adds a detected CPU.
- *
- * @param cpu The CPU to add.
+ * The PIT's maximum frequency in Hz.
  */
-void cpu_add(cpu_t cpu);
+#define PIT_FREQ_MAX            1193180
 
 /**
- * Initializes the BSP and all enabled APs.
- *
- * Only to be called once on the BSP.
+ * The PIT's IRQ number.
  */
-void cpu_startup(void);
+#define PIT_IRQ                 0x0
 
 //----------------------------------------------------------------------------//
-// CPU - Control registers
+// PIT
 //----------------------------------------------------------------------------//
 
 /**
- * Sets the value of the <tt>CR3</tt> register.
+ * Adjusts the frequency of the PIT.
  *
- * @param cr3 New value for the register.
+ * @param frequency The new frequency.
  */
-void cpu_set_cr3(uintptr_t cr3);
+void cpu_pit_freq_set(uint32_t frequency);
 
 /**
- * Returns the value of the <tt>CR3</tt> register.
+ * Returns the PIT's current frequency.
  *
- * @return The value of the register.
+ * @return The current frequency.
  */
-uintptr_t cpu_get_cr3(void);
+uint32_t cpu_pit_freq_get(void);
+
+/**
+ * Enables the PIT by unmasking its IRQ in the PIC.
+ */
+void cpu_pit_enable(void);
+
+/**
+ * Disabled the PIT by masking its IRQ in the PIC.
+ */
+void cpu_pit_disable(void);

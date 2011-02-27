@@ -15,44 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
 #pragma once
 #include <api/types.h>
-#include <api/compiler.h>
-#include <api/cpu.h>
 
 //----------------------------------------------------------------------------//
-// CPU - API
+// Timer
 //----------------------------------------------------------------------------//
 
 /**
- * Adds a detected CPU.
+ * Initializes the LAPIC timer.
  *
- * @param cpu The CPU to add.
+ * Makes the following assumptions about the system's state:
+ *  * The PIC is enabled.
+ *  * IRQs are enabled.
+ *  * The current CPU's LAPIC is enabled.
+ *  * The CPU is able to receive IRQs.
  */
-void cpu_add(cpu_t cpu);
-
-/**
- * Initializes the BSP and all enabled APs.
- *
- * Only to be called once on the BSP.
- */
-void cpu_startup(void);
-
-//----------------------------------------------------------------------------//
-// CPU - Control registers
-//----------------------------------------------------------------------------//
-
-/**
- * Sets the value of the <tt>CR3</tt> register.
- *
- * @param cr3 New value for the register.
- */
-void cpu_set_cr3(uintptr_t cr3);
-
-/**
- * Returns the value of the <tt>CR3</tt> register.
- *
- * @return The value of the register.
- */
-uintptr_t cpu_get_cr3(void);
+void cpu_timer_init(void);

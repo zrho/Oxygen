@@ -15,44 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
 #pragma once
 #include <api/types.h>
-#include <api/compiler.h>
+#include <api/cpu/int.h>
 #include <api/cpu.h>
 
 //----------------------------------------------------------------------------//
-// CPU - API
+// IPI
 //----------------------------------------------------------------------------//
 
 /**
- * Adds a detected CPU.
+ * Broadcasts an IPI to either all CPUs including or exluding the current one,
+ * given its interrupt vector.
  *
- * @param cpu The CPU to add.
+ * @param vector The vector of the IPI.
+ * @param incl_self Whether or not to include the current processor in the
+ *  list of CPUs the IPI is sent to.
  */
-void cpu_add(cpu_t cpu);
+void cpu_ipi_broadcast(interrupt_vector_t vector, bool incl_self);
 
 /**
- * Initializes the BSP and all enabled APs.
+ * Sends an IPI to a single CPU, given its id.
  *
- * Only to be called once on the BSP.
+ * @param vector The vector of the IPI.
+ * @param cpu The id of the CPU the IPI is sent to.
  */
-void cpu_startup(void);
-
-//----------------------------------------------------------------------------//
-// CPU - Control registers
-//----------------------------------------------------------------------------//
-
-/**
- * Sets the value of the <tt>CR3</tt> register.
- *
- * @param cr3 New value for the register.
- */
-void cpu_set_cr3(uintptr_t cr3);
-
-/**
- * Returns the value of the <tt>CR3</tt> register.
- *
- * @return The value of the register.
- */
-uintptr_t cpu_get_cr3(void);
+void cpu_ipi_single(interrupt_vector_t vector, cpu_id_t cpu);

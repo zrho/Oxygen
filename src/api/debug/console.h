@@ -55,7 +55,7 @@ void console_put(char c);
  * Clears the console leaving a blank screen and the cursor at the upper right
  * corner.
  */
-void console_clear();
+void console_clear(void);
 
 //----------------------------------------------------------------------------//
 // Color
@@ -97,14 +97,14 @@ void console_set_background(uint8_t color);
  *
  * @return The foreground color.
  */
-uint8_t console_get_foreground();
+uint8_t console_get_foreground(void);
 
 /**
  * Returns the console's background color.
  *
  * @return The background color.
  */
-uint8_t console_get_background();
+uint8_t console_get_background(void);
 
 //----------------------------------------------------------------------------//
 // Cursor
@@ -115,14 +115,14 @@ uint8_t console_get_background();
  *
  * @return Cursor's X position.
  */
-size_t console_get_x();
+size_t console_get_x(void);
 
 /**
  * Returns the console's cursor position on the Y axis.
  *
  * @return Cursor's Y position.
  */
-size_t console_get_y();
+size_t console_get_y(void);
 
 /**
  * Sets the console's cursor position on the X axis.
@@ -147,11 +147,11 @@ void console_set_y(size_t y);
  *
  * @return Console's width.
  */
-size_t console_get_width();
+size_t console_get_width(void);
 
 /**
  * Returns the console's height.
  *
  * @return Console's height.
  */
-size_t console_get_height();
+size_t console_get_height(void);

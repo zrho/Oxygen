@@ -15,44 +15,53 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
+ 
 #pragma once
 #include <api/types.h>
-#include <api/compiler.h>
-#include <api/cpu.h>
 
 //----------------------------------------------------------------------------//
-// CPU - API
+// Timer
 //----------------------------------------------------------------------------//
 
 /**
- * Adds a detected CPU.
+ * Returns the timer's interval in micro seconds.
  *
- * @param cpu The CPU to add.
+ * @return Timer's interval in micro seconds.
  */
-void cpu_add(cpu_t cpu);
+uint32_t cpu_timer_interval(void);
 
 /**
- * Initializes the BSP and all enabled APs.
- *
- * Only to be called once on the BSP.
+ * Returns the current timer's ticks since system startup or last overflow.
+ * 
+ * @return The current timer's ticks.
  */
-void cpu_startup(void);
+uint64_t cpu_timer_ticks(void);
 
 //----------------------------------------------------------------------------//
-// CPU - Control registers
+// Timer - Handling
 //----------------------------------------------------------------------------//
 
 /**
- * Sets the value of the <tt>CR3</tt> register.
+ * Type of timer handlers.
  *
- * @param cr3 New value for the register.
+ * @param ticks The current timer's ticks.
+ * @param ctx The interrupt context of the IRQ that caused the handler to be
+ *  called.
  */
-void cpu_set_cr3(uintptr_t cr3);
+typedef void (*timer_handler_t)(uint64_t, void *);
 
 /**
- * Returns the value of the <tt>CR3</tt> register.
+ * Registers a handler to the timer, given its callback and granularity.
  *
- * @return The value of the register.
+ * @param handler The handler's callback.
+ * @param granularity The granularity of the handler, i.e. the number of ticks
+ *  that have to pass until the handler is called again.
  */
-uintptr_t cpu_get_cr3(void);
+void cpu_timer_register(timer_handler_t handler, uint32_t granularity);
+
+/**
+ * Unregisters a handler from the timer.
+ *
+ * @param handler The callback of the handler to unregister.
+ */
+void cpu_timer_unregister(timer_handler_t handler);

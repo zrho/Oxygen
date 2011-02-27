@@ -15,44 +15,52 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-
-#pragma once
+ 
 #include <api/types.h>
-#include <api/compiler.h>
-#include <api/cpu.h>
+#include <api/memory/page.h>
+#include <amd64/cpu/lapic.h>
 
 //----------------------------------------------------------------------------//
-// CPU - API
-//----------------------------------------------------------------------------//
-
-/**
- * Adds a detected CPU.
- *
- * @param cpu The CPU to add.
- */
-void cpu_add(cpu_t cpu);
-
-/**
- * Initializes the BSP and all enabled APs.
- *
- * Only to be called once on the BSP.
- */
-void cpu_startup(void);
-
-//----------------------------------------------------------------------------//
-// CPU - Control registers
+// LAPIC - Variables
 //----------------------------------------------------------------------------//
 
 /**
- * Sets the value of the <tt>CR3</tt> register.
- *
- * @param cr3 New value for the register.
+ * The LAPIC's physical address.
  */
-void cpu_set_cr3(uintptr_t cr3);
+static uintptr_t cpu_lapic_addr = 0;
 
-/**
- * Returns the value of the <tt>CR3</tt> register.
- *
- * @return The value of the register.
- */
-uintptr_t cpu_get_cr3(void);
+//----------------------------------------------------------------------------//
+// LAPIC
+//----------------------------------------------------------------------------//
+
+void cpu_lapic_eoi(void)
+{
+    // Write abribrary value to EOI register
+    *LAPIC_REGISTER(LAPIC_EOI_OFFSET) = 0x0;
+}
+
+void cpu_lapic_enable(void)
+{
+    // Set APIC Enabled bit in SVR
+    *LAPIC_REGISTER(LAPIC_SVR_OFFSET) |= 0x100;
+}
+
+void cpu_lapic_disable(void)
+{
+    // unset APIC Enabled bit in SVR
+    *LAPIC_REGISTER(LAPIC_SVR_OFFSET) &= ~0x100;
+}
+
+void cpu_lapic_set(uintptr_t addr)
+{
+    cpu_lapic_addr = addr;
+    page_map(
+        LAPIC_VIRTUAL_ADDR,
+        cpu_lapic_addr,
+        PG_GLOBAL | PG_PRESENT | PG_WRITABLE);
+}
+
+uintptr_t cpu_lapic_get(void)
+{
+    return cpu_lapic_addr;
+}

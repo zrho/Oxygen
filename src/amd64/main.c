@@ -30,14 +30,22 @@
 #include <api/memory/heap.h>
 #include <api/string.h>
 #include <amd64/info/acpi.h>
+#include <api/cpu/timer.h>
 
-void pg_fault(uint8_t vector, void *ctx)
+static void pg_fault(uint8_t vector, void *ctx)
 {
     console_print("PF!");
     while(1);
 }
 
-int main()
+static void tmr_handler(uint64_t ticks, void *ctx)
+{
+    console_print("Tick ");
+    console_print_hex(ticks);
+    console_print("\n");
+}
+
+int main(void)
 {
     // Relocate video memory
     console_memory_relocate(CONSOLE_MEM_VIRTUAL);
@@ -86,6 +94,7 @@ int main()
     console_print("[CORE] Initializing interrupts...\n");
     cpu_int_init();
     cpu_int_register(14, &pg_fault);
+    cpu_int_register(0, &pg_fault);
     
     // Parse ACPI tables and create sysinfo structure
     console_print("[INFO] Parsing ACPI tables...\n");
@@ -95,8 +104,9 @@ int main()
     console_print("[INFO] Processors: ");
     console_print_hex(cpu_count());
     console_print("\n[INFO] LAPIC Physical Address: ");
-    console_print_hex(cpu_get_lapic());
+    console_print_hex(cpu_lapic_get());
     console_print("\n");
     
-    return 0;
+    cpu_startup();
+    console_print("[INFO] Done.");
 }
