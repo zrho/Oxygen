@@ -116,5 +116,5 @@ size_t cpu_count(void)
 
 cpu_id_t cpu_current_id(void)
 {
-    return *((uint8_t *) (LAPIC_VIRTUAL_ADDR + LAPIC_ID_OFFSET));
+    return *LAPIC_REGISTER(LAPIC_ID_OFFSET);
 }

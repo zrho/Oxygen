@@ -20,6 +20,7 @@ OBJECT_FILES = \
     amd64/entry.o \
     amd64/debug/console.o \
     amd64/io/io.o \
+    amd64/io/cmos.o \
     amd64/memory/frame.o \
     amd64/memory/page.o \
     amd64/memory/heap.o \
@@ -33,7 +34,9 @@ OBJECT_FILES = \
     amd64/cpu/cr3.o \
     amd64/cpu/int.o \
     amd64/cpu/asm/int.o \
+    amd64/cpu/asm/trampoline.o \
     amd64/info/acpi.o \
+    amd64/util/time.o \
     common/memory/dlmalloc.o \
     common/debug/console.o \
     common/memory/frame.o \
@@ -43,7 +46,9 @@ OBJECT_FILES = \
     common/memory/strlen.o \
     common/memory/strcpy.o \
     common/memory/strcmp.o \
-    common/memory/memcmp.o
+    common/memory/memcmp.o \
+    common/util/time.o \
+    common/util/lcg.o
 
 OBJECT_PATHS = $(OBJECT_FILES:%.o=$(BIN_DIR)/%.o)
 

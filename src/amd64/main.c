@@ -31,6 +31,9 @@
 #include <api/string.h>
 #include <amd64/info/acpi.h>
 #include <api/cpu/timer.h>
+#include <api/util/random.h>
+#include <api/util/time.h>
+#include <amd64/util/time.h>
 
 static void pg_fault(uint8_t vector, void *ctx)
 {
@@ -88,7 +91,7 @@ int main(void)
     
     // Relocate frame bitset
     frame_setup_relocate();
-    page_unmap_low();
+    //page_unmap_low();
     
     // Initialize interrupts
     console_print("[CORE] Initializing interrupts...\n");
@@ -106,7 +109,21 @@ int main(void)
     console_print("\n[INFO] LAPIC Physical Address: ");
     console_print_hex(cpu_lapic_get());
     console_print("\n");
-    
+
+    cpu_int_register(0x80, &pg_fault);
+    console_print("[CORE] Initializing processor...\n");
     cpu_startup();
-    console_print("[INFO] Done.");
+    
+    // Initialize system time
+    console_print("[CORE] Initializing system time...\n");
+    time_init();
+    
+    size_t i;
+    for (i = 0; i < 5; ++i) {
+        console_print_hex(random_fast_next());
+        console_print("\n");
+    }
+    
+    console_print("[CORE] Done.");
+    return 0;
 }
