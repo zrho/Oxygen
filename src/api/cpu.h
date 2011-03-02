@@ -47,7 +47,7 @@ typedef uint8_t cpu_id_t;
  * Whether the CPU is the BootStrap Processor, i.e. the processor that started
  * the system.
  */
-#define CPU_FLAG_BSP        (1 << 0)
+#define CPU_FLAG_BSP        (1 << 1)
 
 //------------------------------------------------------------------------------
 // CPU - Structures
