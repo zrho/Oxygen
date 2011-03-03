@@ -49,6 +49,13 @@ typedef uint8_t cpu_id_t;
  */
 #define CPU_FLAG_BSP        (1 << 1)
 
+/** 
+ * CPU Flag (Value 4).
+ *
+ * Whether the CPU has been initialized. Is set by the CPU's startup code.
+ */
+#define CPU_FLAG_INIT       (1 << 2)
+
 //------------------------------------------------------------------------------
 // CPU - Structures
 //------------------------------------------------------------------------------

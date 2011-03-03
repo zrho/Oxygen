@@ -17,6 +17,8 @@ SECTIONS
    {
         data = .;
         *(.data)
+        cpu_smp_trampoline = .;
+        *(.cpu_smp_trampoline)
         . = ALIGN(4096);
    }
 
@@ -31,7 +33,7 @@ SECTIONS
    {
        bss = .;
        *(.bss)
-
+       
         *(COMMON)
        . = ALIGN(4096);
    }

@@ -133,12 +133,14 @@ static void _page_unmap(page_t *page)
  *
  * @param page The page to map.
  * @param flags The flags to map the flags with.
+ * @param virt The virtual address to invalidate.
  */
-static void _page_alloc_frame(page_t *page, uint16_t flags)
+static void _page_alloc_frame(page_t *page, uint16_t flags, uintptr_t virt)
 {
     // TODO: PANIC on error
     uintptr_t frame = frame_alloc();
     _page_map(page, frame, flags);
+    _page_invalidate(virt);
 }
 
 /**
@@ -156,7 +158,10 @@ static bool _page_exists(uintptr_t virt, bool create)
     
     if (!(*pml4e & PG_PRESENT)) {
         if (create)
-            _page_alloc_frame(pml4e, PAGE_FLAGS_RECURSIVE);
+            _page_alloc_frame(
+                pml4e,
+                PAGE_FLAGS_RECURSIVE,
+                PAGE_VIRT_PDP(PAGE_PML4E_INDEX(virt)));
         else
             return false;
     }
@@ -168,7 +173,12 @@ static bool _page_exists(uintptr_t virt, bool create)
         
     if (!(*pdpe & PG_PRESENT)) {
         if (create)
-            _page_alloc_frame(pdpe, PAGE_FLAGS_RECURSIVE);
+            _page_alloc_frame(
+                pdpe,
+                PAGE_FLAGS_RECURSIVE,
+                PAGE_VIRT_PD(
+                    PAGE_PML4E_INDEX(virt),
+                    PAGE_PDPE_INDEX(virt)));
         else
             return false;
     }
@@ -181,7 +191,13 @@ static bool _page_exists(uintptr_t virt, bool create)
         
     if (!(*pde & PG_PRESENT)) {
         if (create)
-            _page_alloc_frame(pde, PAGE_FLAGS_RECURSIVE);
+            _page_alloc_frame(
+                pde,
+                PAGE_FLAGS_RECURSIVE,
+                PAGE_VIRT_PT(
+                    PAGE_PML4E_INDEX(virt),
+                    PAGE_PDPE_INDEX(virt),
+                    PAGE_PDE_INDEX(virt)));
         else
             return false;
     }

@@ -26,6 +26,7 @@
 
 #include <amd64/cpu.h>
 #include <amd64/cpu/int.h>
+#include <amd64/cpu/ipi.h>
 #include <amd64/cpu/pic.h>
 #include <amd64/cpu/lapic.h>
 #include <amd64/cpu/timer.h>
@@ -52,7 +53,7 @@ void cpu_startup(void)
 {
     // Mark current processor as BSP
     cpu_t *bsp = cpu_get(cpu_current_id());
-    bsp->flags |= CPU_FLAG_BSP;
+    bsp->flags |= CPU_FLAG_BSP | CPU_FLAG_INIT;
     
     // Initialize PIC
     cpu_pic_init();
@@ -116,5 +117,5 @@ size_t cpu_count(void)
 
 cpu_id_t cpu_current_id(void)
 {
-    return *LAPIC_REGISTER(LAPIC_ID_OFFSET);
+    return (*LAPIC_REGISTER(LAPIC_ID_OFFSET) >> 24) & 0xFF;
 }

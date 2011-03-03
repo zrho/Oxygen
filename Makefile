@@ -6,8 +6,8 @@ export BIN_DIR=bin
 export SOURCE_DIR=src
 
 # EMU
-export EMU=qemu
-export EMUFLAGS = -monitor stdio -m 32M -smp 4
+export EMU=bochs
+export EMUFLAGS = -q
 
 # LD (Default)
 export LD=ld
@@ -34,7 +34,7 @@ clean:
 # Run the kernel
 .PHONY: run
 run: iso
-	$(EMU) $(EMUFLAGS) -cdrom boot.iso
+	$(EMU) $(EMUFLAGS)
 
 # Target for building the loader binary
 .PHONY: loader

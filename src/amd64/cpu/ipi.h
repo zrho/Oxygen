@@ -63,3 +63,12 @@
 void cpu_ipi(
     uint8_t vector, uint8_t dest, uint8_t shorthand,
     uint8_t mode, uint8_t delivery, uint8_t level, cpu_t *cpu);
+    
+/**
+ * Tries to start a CPU and make it begin its execution on the given target
+ * address.
+ *
+ * @param addr The address to CPU jumps to after startup.
+ * @param cpu The id of the CPU to start.
+ */
+void cpu_ipi_startup(uint16_t addr, cpu_id_t cpu);

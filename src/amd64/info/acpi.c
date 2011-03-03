@@ -61,7 +61,7 @@ static void *_acpi_tmp_map(uintptr_t phys, uintptr_t length)
     uintptr_t offset = (phys & 0xFFF);
     
     // Align down address
-    phys = phys & ~0xFFF;
+    phys &= ~0xFFF;
     
     // Calculate number of required pages
     size_t pages = mem_align(offset + length, 0x1000) / 0x1000;
@@ -83,10 +83,9 @@ static void *_acpi_tmp_map(uintptr_t phys, uintptr_t length)
 static void _acpi_tmp_unmap_all()
 {
     // Unmap pages
-    while (acpi_tmp_mapping > ACPI_AUX_VIRT) {
-        acpi_tmp_mapping -= 0x1000;
-        page_unmap(acpi_tmp_mapping);
-    }
+    uintptr_t addr;
+    for (addr = ACPI_AUX_VIRT; addr < acpi_tmp_mapping; addr += 0x1000)
+        page_unmap(addr);
 }
 
 //----------------------------------------------------------------------------//
@@ -115,16 +114,11 @@ static uintptr_t _acpi_find_rsdp()
     acpi_rsdp_t *rsdp = 0;
 
     // Find begin address of EBDA
-    // To do this, map first 4KB
-    page_map(ACPI_AUX_VIRT, 0x0, PG_WRITABLE | PG_PRESENT);
-    uintptr_t ebda_addr = mem_align(*((uint16_t *) (0x040E + ACPI_AUX_VIRT)), 0x10);
-    
-    uintptr_t ebda_virt = (uintptr_t) _acpi_tmp_map(ebda_addr, 0x400);
-    ebda_virt = mem_align(ebda_virt, 0x10);
+    uintptr_t ebda_addr = mem_align(*((uint16_t *) (0x040E)), 0x10);
     uintptr_t offset;
     
     for (offset = 0; offset < 0x400 - sizeof(acpi_rsdp_t); offset += 0x10) {
-        rsdp = (acpi_rsdp_t *) (ebda_virt + offset);
+        rsdp = (acpi_rsdp_t *) (ebda_addr + offset);
         
         if (_acpi_rsdp_check(rsdp)) {
             // Unmap
@@ -134,31 +128,18 @@ static uintptr_t _acpi_find_rsdp()
             return ebda_addr + offset;
         }
     }
-    
-    _acpi_tmp_unmap_all();
-    
-    // Map main BIOS area
-    for (offset = 0; offset < BIOS_MAIN_LENGTH; offset += 0x1000)
-        page_map(
-            ACPI_AUX_VIRT + offset,
-            BIOS_MAIN_ADDR + offset,
-            PG_WRITABLE | PG_PRESENT);
             
     // Seach for RSDP
     uintptr_t rsdp_phys = 0;
     
     for (offset = 0; offset < BIOS_MAIN_LENGTH - sizeof(acpi_rsdp_t); offset += 0x10) {
-        rsdp = (acpi_rsdp_t *) (ACPI_AUX_VIRT + offset);
+        rsdp = (acpi_rsdp_t *) (BIOS_MAIN_ADDR + offset);
 
         if (_acpi_rsdp_check(rsdp)) {
             rsdp_phys = BIOS_MAIN_ADDR + offset;
             break;
         }
     }
-    
-    // Unmap pages
-    for (offset = 0; offset < BIOS_MAIN_LENGTH; offset += 0x1000)
-        page_unmap(ACPI_AUX_VIRT + offset);
         
     // TODO: Panic if not found
     if (0 == rsdp_phys) {
@@ -178,7 +159,8 @@ static uintptr_t _acpi_find_rsdp()
 static void _acpi_find_tables()
 {
     // (X|R)SDT pointer
-    acpi_rsdp_t *rsdp = (acpi_rsdp_t *) _acpi_tmp_map(_acpi_find_rsdp(), sizeof(acpi_rsdp_t));
+    uintptr_t rsdp_phys = _acpi_find_rsdp();
+    acpi_rsdp_t *rsdp = (acpi_rsdp_t *) _acpi_tmp_map(rsdp_phys, sizeof(acpi_rsdp_t));
     acpi_sdt_header_t *rsdt = (acpi_sdt_header_t *) (uintptr_t) rsdp->rsdt_addr;
     if (rsdp->revision >= 1) rsdt = (acpi_sdt_header_t *) rsdp->xsdt_addr;
         

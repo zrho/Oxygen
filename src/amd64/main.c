@@ -110,19 +110,17 @@ int main(void)
     console_print_hex(cpu_lapic_get());
     console_print("\n");
 
-    cpu_int_register(0x80, &pg_fault);
-    console_print("[CORE] Initializing processor...\n");
+    // Initialize BSP
+    console_print("[SMP ] Initializing BSP...\n");
     cpu_startup();
+    
+    // Initialize APs
+    console_print("[SMP ] Initializing APs...\n");
+    cpu_smp_init();
     
     // Initialize system time
     console_print("[CORE] Initializing system time...\n");
     time_init();
-    
-    size_t i;
-    for (i = 0; i < 5; ++i) {
-        console_print_hex(random_fast_next());
-        console_print("\n");
-    }
     
     console_print("[CORE] Done.");
     return 0;
