@@ -1,0 +1,38 @@
+Oxygen
+======
+Oxygen is a small microkernel primarily designed to run on AMD64 compatible
+platforms.
+
+Features
+------------
+Currently supported features include:
+
+  - Multiboot Compatibility: Oxygen will boot using any boot loader that conforms
+    to the multiboot specification. Trough usage of a 32 bit loader even GRUB
+    Legacy or any other multiboot boot loader that does not support loading of
+    64 bit binaries can be used for running the Oxygen platform.
+  - Designed for AMD64: Oxygen is designed to run on modern AMD64-compatible processors
+    from the beginning. This comes with the possibility to address up to 256TiB
+    of physical memory, a higher number of general-purpose registers available
+    for free use and native support for 64 bit integer arithmetics.
+  - Symmetric Multiprocessing: Oxygen comes with native support for multiprocessor
+    systems as defined in the Intel MP specifications.
+  - Microkernel design: Oxygen is designed to implement the model of a microkernel
+    and the principles of JeOS (Just enough Operating System) to provide maximum
+    stability and flexibility in configuring the system.
+  
+Requirements
+------------
+For a proper build Oxygen requires the following tools to be present on the build
+system:
+
+ - make (known to work with version 3.81)
+ - ld (known to work with version 2.20.51)
+ - gcc (known to work with version 4.4.5)
+ - nasm (known to work with version 2.08.01)
+ - mkisofs (known to work with version 1.1.10)
+
+For emulation bochs (known to work with version 2.4.6) is recommended and should
+at least be configured with the following options:
+
+    $ ./configure --enable-smp --enable-cpu-level=6 --enable-acpi --enable-x86-64 --enable-cdrom
