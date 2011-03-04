@@ -31,8 +31,8 @@
 // Variables
 //----------------------------------------------------------------------------//
 
-cpu_int_entry_t cpu_int_idt[255];
-uintptr_t cpu_int_handlers[255];
+static cpu_int_entry_t cpu_int_idt[255];
+static uintptr_t cpu_int_handlers[255];
 
 //----------------------------------------------------------------------------//
 // Internal
@@ -43,10 +43,10 @@ uintptr_t cpu_int_handlers[255];
  *
  * @param pointer IDT pointer to write.
  */
-static void _cpu_int_flush(cpu_int_pointer_t pointer)
+static void _cpu_int_flush(cpu_int_pointer_t ptr)
 {
     //return;
-    asm volatile ("lidt %0" : : "m" (pointer));
+    asm volatile ("lidt %0" : : "m" (ptr));
 }
 
 //----------------------------------------------------------------------------//
@@ -60,11 +60,6 @@ extern uintptr_t _cpu_int_handlers[256];
 
 void cpu_int_init()
 {
-    // Setup pointer
-    cpu_int_pointer_t pointer;
-    pointer.offset = (uintptr_t) &cpu_int_idt;
-    pointer.limit = (uint16_t) (256 * sizeof(cpu_int_entry_t) - 1);
-    
     // Clear handler function table
     memset((void *) &cpu_int_handlers, 0, sizeof(uintptr_t) * 256);
     
@@ -72,7 +67,7 @@ void cpu_int_init()
     memset((void *) &cpu_int_idt, 0, sizeof(cpu_int_entry_t) * 256);
     
     size_t vector;
-    for (vector = 0; vector < 255; ++vector) {
+    for (vector = 0; vector < 256; ++vector) {
         uintptr_t offset = _cpu_int_handlers[vector];
         cpu_int_entry_t *entry = &cpu_int_idt[vector];
         
@@ -83,7 +78,15 @@ void cpu_int_init()
         entry->cs = 0x08;
         entry->flags = 0x8E;
     }
-    
+}
+
+void cpu_int_load(void)
+{   
+    // Setup pointer
+    cpu_int_pointer_t pointer;
+    pointer.offset = (uintptr_t) &cpu_int_idt;
+    pointer.limit = (uint16_t) (256 * sizeof(cpu_int_entry_t) - 1);
+
     // Load idt
     _cpu_int_flush(pointer);
 }

@@ -26,10 +26,12 @@
 /**
  * Initializes the LAPIC timer.
  *
- * Makes the following assumptions about the system's state:
+ * Makes the following assumptions about the system's state for calibration:
  *  * The PIC is enabled.
  *  * IRQs are enabled.
  *  * The current CPU's LAPIC is enabled.
  *  * The CPU is able to receive IRQs.
+ *
+ * @param calibrate Whether to calibrate the timer.
  */
-void cpu_timer_init(void);
+void cpu_timer_init(bool calibrate);

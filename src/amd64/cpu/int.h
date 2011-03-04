@@ -105,6 +105,11 @@ typedef struct cpu_int_pointer_t
 //----------------------------------------------------------------------------//
 
 /**
- * Sets up interrupt handling.
+ * Sets up interrupt handling by preparing the IDT.
  */
 void cpu_int_init(void);
+
+/**
+ * Loads the system's IDT and starts interrupt handling that way.
+ */
+void cpu_int_load(void);

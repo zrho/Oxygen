@@ -73,6 +73,14 @@ void cpu_lapic_enable(void);
 void cpu_lapic_disable(void);
 
 /**
+ * Initializes the following LAPIC interrupts to the defined interrupt vectors.
+ *  * LINT0
+ *  * LINT1
+ *  * ERROR
+ */
+void cpu_lapic_init(void);
+
+/**
  * Sets the physical address of the LAPIC.
  *
  * @param addr The address of the LAPIC.

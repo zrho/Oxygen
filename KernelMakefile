@@ -33,7 +33,6 @@ OBJECT_FILES = \
     amd64/cpu/timer.o \
     amd64/cpu/cr3.o \
     amd64/cpu/int.o \
-    amd64/cpu/smp.o \
     amd64/cpu/asm/int.o \
     amd64/cpu/asm/smp.o \
     amd64/info/acpi.o \

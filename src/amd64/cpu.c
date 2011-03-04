@@ -45,6 +45,42 @@ static cpu_t *cpu_first = 0;
 static cpu_t *cpu_last = 0;
 static size_t cpu_list_len = 0;
 
+/**
+ * Location of SMP trampoline in this binary (virtual).
+ */
+extern uint8_t cpu_smp_trampoline;
+
+//----------------------------------------------------------------------------//
+// CPU - Internal
+//----------------------------------------------------------------------------//
+
+/**
+ * Entry point APs will jump to after initialization.
+ */
+static void _cpu_smp_entry_point(void)
+{    
+    // Load IDT
+    cpu_int_load();
+    
+    // Disable PIC
+    cpu_pic_disable();
+    
+    // Enable interrupts
+    cpu_set_interruptable(true);
+    
+    // Enable LAPIC
+    cpu_lapic_enable();
+    
+    // Initialize timer
+    cpu_timer_init(false);
+    
+    // Set init flag
+    cpu_get(cpu_current_id())->flags |= CPU_FLAG_INIT;
+    
+    // Trap in infinite loop
+    while (1);
+}
+
 //----------------------------------------------------------------------------//
 // CPU - API
 //----------------------------------------------------------------------------//
@@ -65,7 +101,7 @@ void cpu_startup(void)
     cpu_lapic_enable();
     
     // Initialize timer
-    cpu_timer_init();
+    cpu_timer_init(true);
     
     // Disable PIC
     cpu_pic_disable();
@@ -118,4 +154,83 @@ size_t cpu_count(void)
 cpu_id_t cpu_current_id(void)
 {
     return (*LAPIC_REGISTER(LAPIC_ID_OFFSET) >> 24) & 0xFF;
+}
+
+//----------------------------------------------------------------------------//
+// CPU - SMP
+//----------------------------------------------------------------------------//
+
+void cpu_smp_init(void)
+{
+    // Get BSP
+    cpu_t *bsp = cpu_get(cpu_current_id());
+    
+    // Wait some time
+    size_t i = 0;
+    for (i = 0; i < 0xFFFFF; ++i);
+
+    // Load trampoline code
+    memcpy(
+        (void *) 0x1000,
+        (void *) (uintptr_t) (&cpu_smp_trampoline),
+        0x1000);
+    
+    // GDT
+    memcpy(
+        (void *) 0x1C00,
+        (void *) 0xFFFFFF7FFFFFD028,
+        0x6);
+        
+    // Entry point
+    *((uint64_t *) 0x1C06) = (uint64_t) (&_cpu_smp_entry_point);
+    
+    // Boot APs
+    cpu_t *cpu = cpu_get_first();
+    
+    while (0 != cpu) {
+        // Is AP and enabled??
+        if (cpu->flags & CPU_FLAG_BSP | !(cpu->flags & CPU_FLAG_ENABLED)) {
+            cpu = cpu->next;
+            continue;
+        }
+        
+        // Send init ipi
+        cpu_ipi(
+            0,                          // Vector
+            cpu->id,                    // Destination
+            IPI_DEST_DEST_FIELD,        // Destination shorthand
+            IPI_MODE_PHYSICAL,          // Destination mode
+            IPI_DELIVERY_INIT,          // Delivery mode
+            IPI_LEVEL_ASSERT,           // Level
+            bsp);                       // Current CPI
+    
+        // Send first startup ipi
+        cpu_ipi_startup(0x1000, cpu->id);
+        
+        // Wait
+        for (i = 0; i < 0xFFFFF & !(cpu->flags & CPU_FLAG_INIT); ++i);
+        
+        // Initialized now?
+        if (!(cpu->flags & CPU_FLAG_INIT))
+            // Retry startup ipi
+            cpu_ipi_startup(0x1000, cpu->id);
+            
+        // Wait
+        for (i = 0; i < 0xFFFFFF & !(cpu->flags & CPU_FLAG_INIT); ++i);
+        
+        // Intiailized now?
+        if (!(cpu->flags & CPU_FLAG_INIT)) {
+            console_print("[SMP ] Failed to initialize AP ");
+            console_print_hex(cpu->id);
+            console_print("\n");
+        } else {
+            // Print message
+            console_print("[SMP ] Application Processor ");
+            console_print_hex(cpu->id);
+            console_print(" initialized.\n");
+        }
+        
+        // Next
+        cpu = cpu->next;
+    }
 }

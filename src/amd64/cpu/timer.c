@@ -204,25 +204,28 @@ void cpu_timer_unregister(timer_handler_t handler)
 // Timer
 //----------------------------------------------------------------------------//
 
-void cpu_timer_init(void)
+void cpu_timer_init(bool calibrate)
 {
     // Set LAPIC timer's Divide Configuration to a divisor of 1
     *LAPIC_REGISTER(LAPIC_DCR_OFFSET) = 0xB;
 
-    // Set PIT frequency
-    cpu_pit_freq_set(TIMER_INIT_FREQ);
+    // Calibrate?
+    if (calibrate) {
+        // Set PIT frequency
+        cpu_pit_freq_set(TIMER_INIT_FREQ);
     
-    // Register handler for PIT's IRQ
-    cpu_int_register(INT_PIC_IRQ_OFFSET, &_cpu_timer_init_irq);
+        // Register handler for PIT's IRQ
+        cpu_int_register(INT_PIC_IRQ_OFFSET, &_cpu_timer_init_irq);
     
-    // Enable PIT
-    cpu_pit_enable();
+        // Enable PIT
+        cpu_pit_enable();
     
-    // Wait for timer calibration to complete
-    while (3 > _cpu_timer_stage);
+        // Wait for timer calibration to complete
+        while (3 > _cpu_timer_stage);
     
-    // Disable PIT
-    cpu_pit_disable();
+        // Disable PIT
+        cpu_pit_disable();
+    }
     
     // Configure timer interval
     *LAPIC_REGISTER(LAPIC_INIT_COUNT_OFFSET) =

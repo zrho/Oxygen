@@ -35,7 +35,7 @@ static uintptr_t cpu_lapic_addr = 0;
 
 void cpu_lapic_eoi(void)
 {
-    // Write abribrary value to EOI register
+    // Write arbibrary value to EOI register
     *LAPIC_REGISTER(LAPIC_EOI_OFFSET) = 0x0;
 }
 

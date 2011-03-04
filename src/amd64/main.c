@@ -96,6 +96,7 @@ int main(void)
     // Initialize interrupts
     console_print("[CORE] Initializing interrupts...\n");
     cpu_int_init();
+    cpu_int_load();
     cpu_int_register(14, &pg_fault);
     cpu_int_register(0, &pg_fault);
     
