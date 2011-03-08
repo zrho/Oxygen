@@ -71,9 +71,9 @@ uintptr_t boot_modules_relocate(boot_info_t *info, uintptr_t placement)
         else
             min_prev->next = min->next;
             
-        // Add to sorted list
+        // Add to sorted list        
         if (0 == sorted_end)
-            sorted = min;
+            sorted = sorted_end = min;
         else {
             sorted_end->next = (uintptr_t) min;
             sorted_end = min;
@@ -213,9 +213,9 @@ boot_info_t *boot_create_info(multiboot_info_t *mbi)
         mod->length = mb_mod->mod_end - mod->address;
         
         // Copy name
-        mod->name = (int8_t *) placement;
-        strcpy(mod->name, (int8_t *) mb_mod->cmdline);
-        placement += strlen(mod->name) + 1;
+        mod->name = placement;
+        strcpy((int8_t *) mod->name, (int8_t *) mb_mod->cmdline);
+        placement += strlen((int8_t *) mod->name) + 1;
         
         // Link module
         if (0 != mod_prev)

@@ -60,7 +60,7 @@ typedef struct boot_info_mod_t
     /**
      * The name of the module.
      */
-    int8_t *name;
+    int64_t name;
     
     /**
      * Pointer to the next structure or null-pointer if this is the last one.
