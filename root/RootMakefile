@@ -1,0 +1,51 @@
+# Directories
+SUB_PROJECT_DIR=root
+BIN_DIR=$(SUB_PROJECT_DIR)/build
+SOURCE_DIR=$(SUB_PROJECT_DIR)/src
+
+# CC
+CC=gcc
+CCFLAGS=-m64 \
+    -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+    -Wall \
+    -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls \
+    -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings \
+    -D__AMD64__ \
+    -D__DEBUG__ \
+    -x c \
+    -mcmodel=large \
+    -I$(SOURCE_DIR)
+    
+# Object files
+OBJECT_FILES = \
+    root.o
+
+OBJECT_PATHS = $(OBJECT_FILES:%.o=$(BIN_DIR)/%.o)
+
+# Compiles C code
+$(BIN_DIR)/%.o: $(SOURCE_DIR)/%.c
+	mkdir -p $(@D)
+	$(CC) $(CCFLAGS) -o $@ -c $<
+
+# Assembles NASM
+$(BIN_DIR)/%.o: $(SOURCE_DIR)/%.s
+	mkdir -p $(@D)
+	$(ASM64) $(ASM64FLAGS) -i $(SOURCE_DIR)/ -o $@ $<
+    
+# Links the binary
+.PHONY: link
+link:
+	$(LD) $(LDFLAGS) -m elf_x86_64 -T $(SUB_PROJECT_DIR)/link.ld \
+	-o $(BIN_DIR)/root64.bin $(OBJECT_PATHS)
+    
+# Builds the object files
+build: $(OBJECT_PATHS)
+    
+# Assembles the binary
+.PHONY: all
+all: build link
+
+# Remove all binaries
+.PHONY: clean
+clean:
+	rm -Rf $(BIN_DIR)/*

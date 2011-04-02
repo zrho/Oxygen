@@ -1,0 +1,85 @@
+# Directories
+SUB_PROJECT_DIR=kernel
+BIN_DIR=$(SUB_PROJECT_DIR)/build/kernel
+SOURCE_DIR=$(SUB_PROJECT_DIR)/src
+
+# CC
+CC=gcc
+CCFLAGS=-m64 \
+    -nostdlib -nostdinc -fno-builtin -fno-stack-protector \
+    -Wall \
+    -Wmissing-prototypes -Wmissing-declarations -Wredundant-decls \
+    -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings \
+    -D__AMD64__ \
+    -D__DEBUG__ \
+    -x c \
+    -mcmodel=large \
+    -I$(SOURCE_DIR)/
+    
+# Object files
+OBJECT_FILES = \
+    amd64/main.o \
+    amd64/entry.o \
+    amd64/binary/elf64.o \
+    amd64/debug/console.o \
+    amd64/io/io.o \
+    amd64/io/cmos.o \
+    amd64/memory/frame.o \
+    amd64/memory/page.o \
+    amd64/memory/heap.o \
+    amd64/sync/spinlock.o \
+    amd64/cpu.o \
+    amd64/cpu/ipi.o \
+    amd64/cpu/lapic.o \
+    amd64/cpu/pic.o \
+    amd64/cpu/pit.o \
+    amd64/cpu/timer.o \
+    amd64/cpu/cr3.o \
+    amd64/cpu/int.o \
+    amd64/cpu/asm/int.o \
+    amd64/cpu/asm/smp.o \
+    amd64/info/acpi.o \
+    amd64/util/time.o \
+    common/memory/dlmalloc.o \
+    common/debug/console.o \
+    common/memory/frame.o \
+    common/memory/mem_align.o \
+    common/memory/memcpy.o \
+    common/memory/memset.o \
+    common/memory/strlen.o \
+    common/memory/strcpy.o \
+    common/memory/strstr.o \
+    common/memory/strcmp.o \
+    common/memory/memcmp.o \
+    common/util/time.o \
+    common/util/lcg.o
+
+OBJECT_PATHS = $(OBJECT_FILES:%.o=$(BIN_DIR)/%.o)
+
+# Compiles C code
+$(BIN_DIR)/%.o: $(SOURCE_DIR)/%.c
+	mkdir -p $(@D)
+	$(CC) $(CCFLAGS) -o $@ -c $<
+
+# Assembles NASM
+$(BIN_DIR)/%.o: $(SOURCE_DIR)/%.s
+	mkdir -p $(@D)
+	$(ASM64) $(ASM64FLAGS) -i $(SOURCE_DIR)/ -o $@ $<
+    
+# Links the binary
+.PHONY: link
+link:
+	$(LD) $(LDFLAGS) -m elf_x86_64 -T $(SUB_PROJECT_DIR)/link/kernel.ld \
+	-o $(BIN_DIR)/kernel64.bin $(OBJECT_PATHS)
+    
+# Builds the object files
+build: $(OBJECT_PATHS)
+    
+# Assembles the binary
+.PHONY: all
+all: build link
+
+# Remove all binaries
+.PHONY: clean
+clean:
+	rm -Rf $(BIN_DIR)/*
