@@ -16,48 +16,35 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 #include <api/types.h>
+#include <api/process.h>
+#include <api/process/sched.h>
 
 //----------------------------------------------------------------------------//
-// Stack - Structures
+// Scheduler - Internal
 //----------------------------------------------------------------------------//
 
-/**
- * A stack classified by its address and size.
- *
- * May grow up or down depending on the architecture.
- */
-typedef struct stack_t
+static void _scheduler_timer_handler(uint64_t ticks, void *_ctx)
 {
-    /**
-     * The address of the stack.
-     */
-    uintptr_t addr;
+    // Get current CPU
+    cpu_t *cpu = cpu_get(cpu_current_id());
     
-    /**
-     * The size of the stack.
-     */
-    size_t size;
+    // Acquire process lock
+    process_lock();
     
-} stack_t;
-
-//----------------------------------------------------------------------------//
-// Stack
-//----------------------------------------------------------------------------//
-
-/**
- * Changes a stack's size.
- *
- * @param size The new size of the stack. Will be page aligned.
- * @param stack The stack to resize.
- * @return The new size of the stack.
- */
-size_t stack_resize(size_t size, stack_t *stack);
-
-/**
- * Disposes a stack by freeing and unmapping all of its memory.
- *
- * @param stack The stack to dispose.
- */
-void stack_dispose(stack_t *stack);
+    // Get current thread
+    thread_t *thread = cpu->thread;
+    
+    if (0 != thread)
+        // Decrease lifetime
+        if (thread->ttl > 0)
+            --thread->ttl;
+    
+    // Tick
+    thread_tick(_ctx);
+    
+    // TODO: Idle
+    
+    // Release process lock
+    process_unlock();
+}

@@ -19,6 +19,9 @@
 #include <api/types.h>
 #include <api/string.h>
 
+#include <api/multitasking/process.h>
+#include <api/multitasking/scheduler.h>
+
 #include <api/boot/info.h>
 #include <api/debug/console.h>
 
@@ -138,6 +141,37 @@ int main(void)
     // Initialize system time
     console_print("[CORE] Initializing system time...\n");
     time_init();
+    
+    // Find root binary
+    boot_info_mod_t *module = (boot_info_mod_t *) info->mods;
+    
+    while (0 != module) {
+        // Is root binary?
+        if (module->name == (uintptr_t) strstr(
+            (int8_t *) module->name, "/boot/root64.bin"))
+            break;
+            
+        // Next
+        module = (boot_info_mod_t *) module->next;
+    }
+    
+    // Found root binary?
+    if (0 == module) {
+        console_print("[CORE] Failed to find root binary.\n");
+        while (1);
+    }
+    
+    // Load root binary
+    uintptr_t entry_point = elf64_exec_load((void *) module->address);
+    
+    if (entry_point & ELF64_ERROR) {
+        console_print("[CORE] Failed to load root binary.\nError code: ");
+        console_print_hex(entry_point & ~ELF64_ERROR);
+        while (1);
+    }
+    
+    // Spawn root process
+    process_spawn(0, page_get_space(), entry_point);
     
     console_print("[CORE] Done.");
     return 0;

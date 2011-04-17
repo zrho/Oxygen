@@ -194,12 +194,17 @@ static void _acpi_find_tables()
 static void _acpi_parse_madt_lapic(acpi_madt_lapic_t *lapic_tbl)
 {
     // Flags
-    uint8_t flags = 0;
+    uint8_t flags = CPU_FLAG_KERNEL;
     if (lapic_tbl->flags & ACPI_MADT_LAPIC_ENABLED)
         flags |= CPU_FLAG_ENABLED;
 
     // Create processor
+    spinlock_t lock = {0, 0};
+    
     cpu_t cpu = {lapic_tbl->apic_id, flags};
+    cpu.lock = lock;
+    cpu.process = 0;
+    cpu.thread = 0;
     cpu_add(cpu);
 }
 

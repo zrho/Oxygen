@@ -18,8 +18,11 @@
 
 #include <api/types.h>
 #include <api/string.h>
+#include <api/cpu.h>
 
 #include <api/cpu/int.h>
+
+#include <api/sync/spinlock.h>
 
 #include <api/memory/page.h>
 
@@ -96,19 +99,34 @@ void cpu_int_register(interrupt_vector_t vector, interrupt_handler_t handler)
     cpu_int_handlers[vector] = (uintptr_t) handler;
 }
 
-uintptr_t _cpu_int_handler(cpu_int_state_t *regs)
+void _cpu_int_handler(cpu_int_state_t *regs)
 {
     // Handler for vector?
     interrupt_vector_t vector = regs->vector;
     
     if (0 == cpu_int_handlers[vector])
-        return regs;
+        return;
+        
+    // Set kernel flag in cpu structure
+    cpu_t *cpu = cpu_get(cpu_current_id());
+    bool user_mode = (0x20 == regs->ds);
+    spinlock_acquire(&cpu->lock);
+    cpu->flags |= CPU_FLAG_KERNEL;
+    spinlock_release(&cpu->lock);
         
     // Call handler
     interrupt_handler_t handler = (interrupt_handler_t) cpu_int_handlers[vector];
-    regs = (cpu_int_state_t *) (*handler)(vector, (void *) regs);
+    (*handler)(vector, (void *) regs);
     
-    return regs;
+    // Remove kernel flag in cpu structure if
+    // returning to user mode
+    if (user_mode) {
+        spinlock_acquire(&cpu->lock);
+        cpu->flags &= ~CPU_FLAG_KERNEL;
+        spinlock_release(&cpu->lock);
+    }
+    
+    return;
 }
 
 //----------------------------------------------------------------------------//

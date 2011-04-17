@@ -118,8 +118,6 @@ _cpu_int_handler_common:
 
     call _cpu_int_handler
 
-    mov rsp, rax
-
     pop rbx                 ; Reload the original data segment descriptor
     mov ds, bx
     mov es, bx

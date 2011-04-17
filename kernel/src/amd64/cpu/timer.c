@@ -104,7 +104,7 @@ static cpu_timer_handler_t *_cpu_timer_handlers = 0;
 /**
  * The IRQ handler to use for the LAPIC timer.
  */
-static void *_cpu_timer_irq(uint8_t vector, void *ctx)
+static void _cpu_timer_irq(uint8_t vector, void *ctx)
 {
     // Increase tick count
     ++_cpu_timer_ticks;
@@ -136,7 +136,7 @@ static void *_cpu_timer_irq(uint8_t vector, void *ctx)
  * @param vector The interrupt vector.
  * @param ctx The interrupt context.
  */
-static void *_cpu_timer_init_irq(uint8_t vector, void *ctx)
+static void _cpu_timer_init_irq(uint8_t vector, void *ctx)
 {
     // Increase stage number
     ++_cpu_timer_stage;

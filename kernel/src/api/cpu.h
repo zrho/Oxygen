@@ -20,6 +20,9 @@
 #include <api/types.h>
 #include <api/sync/spinlock.h>
 
+#include <api/multitasking/thread.h>
+#include <api/multitasking/process.h>
+
 //------------------------------------------------------------------------------
 // CPU - Types
 //------------------------------------------------------------------------------
@@ -56,6 +59,13 @@ typedef uint8_t cpu_id_t;
  */
 #define CPU_FLAG_INIT       (1 << 2)
 
+/**
+ * CPU Flag (Value 8).
+ *
+ * Whether the CPU is currently in kernel mode.
+ */
+#define CPU_FLAG_KERNEL     (1 << 3)
+
 //------------------------------------------------------------------------------
 // CPU - Structures
 //------------------------------------------------------------------------------
@@ -79,6 +89,16 @@ typedef struct cpu_t
      * The CPU's lock.
      */
     spinlock_t lock;
+    
+    /**
+     * The process currently active on this CPU.
+     */
+    process_t *process;
+    
+    /**
+     * The thread currently active on this CPU.
+     */
+    thread_t *thread;
     
     /**
      * Pointer to the next CPU.

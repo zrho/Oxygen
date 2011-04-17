@@ -40,7 +40,7 @@ typedef uint8_t interrupt_vector_t;
  * @param The vector of the interrupt.
  * @param A platform-specific context structure.
  */
-typedef void *(*interrupt_handler_t)(interrupt_vector_t, void *);
+typedef void (*interrupt_handler_t)(interrupt_vector_t, void *);
 
 /**
  * Registers an interrupt handler for the given interrupt vector.
