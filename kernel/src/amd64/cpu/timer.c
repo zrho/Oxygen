@@ -107,10 +107,11 @@ static cpu_timer_handler_t *_cpu_timer_handlers = 0;
 static void _cpu_timer_irq(uint8_t vector, void *ctx)
 {
     // Increase tick count
+    console_print("#");
     ++_cpu_timer_ticks;
     
     // Iterate over handlers
-    cpu_timer_handler_t *current = _cpu_timer_handlers;
+    /*cpu_timer_handler_t *current = _cpu_timer_handlers;
     while (0 != current) {
         // Check granularity
         if (0 == _cpu_timer_ticks % current->granularity)
@@ -118,7 +119,7 @@ static void _cpu_timer_irq(uint8_t vector, void *ctx)
             
         // Next
         current = current->next;
-    }
+    }*/
     
     // EOI
     cpu_lapic_eoi();
@@ -231,14 +232,22 @@ void cpu_timer_init(bool calibrate)
         cpu_pit_disable();
     }
     
-    // Configure timer interval
-    *LAPIC_REGISTER(LAPIC_INIT_COUNT_OFFSET) =
-         (TIMER_INTERVAL * _cpu_timer_multiplier) / 1000;
-
-    // Interrupt Vector
+    // Configure interrupt
     *LAPIC_REGISTER(LAPIC_LVT_OFFSET) =
         (INT_VECTOR_TIMER & 0xFF) |         // 0-7      (Vector)
+        (1 << 16) |                         // 16       (Masked)
         (1 << 17);                          // 17       (Timer Mode: Periodic)
+    
+    // Configure timer interval
+    uint64_t initial = (TIMER_INTERVAL * _cpu_timer_multiplier) / 1000;
+    *LAPIC_REGISTER(LAPIC_INIT_COUNT_OFFSET) = initial;
+         
+    // Set current count
+    console_print_hex(*LAPIC_REGISTER(LAPIC_CURRENT_COUNT_OFFSET));
+    *LAPIC_REGISTER(LAPIC_CURRENT_COUNT_OFFSET) = initial;
+    
+    // Unmask interrupt
+    *LAPIC_REGISTER(LAPIC_LVT_OFFSET) &= ~(1 << 16);
         
     // Register interrupt handler
     cpu_int_register(INT_VECTOR_TIMER, &_cpu_timer_irq);
