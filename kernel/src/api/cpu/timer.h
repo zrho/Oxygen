@@ -18,6 +18,7 @@
  
 #pragma once
 #include <api/types.h>
+#include <api/cpu.h>
 
 //----------------------------------------------------------------------------//
 // Timer
@@ -47,8 +48,9 @@ uint64_t cpu_timer_ticks(void);
  * @param ticks The current timer's ticks.
  * @param ctx The interrupt context of the IRQ that caused the handler to be
  *  called.
+ * @param cpu The current CPU.
  */
-typedef void (*timer_handler_t)(uint64_t, void *);
+typedef void (*timer_handler_t)(uint64_t, void *, cpu_t *);
 
 /**
  * Registers a handler to the timer, given its callback and granularity.

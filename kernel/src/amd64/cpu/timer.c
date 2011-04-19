@@ -17,6 +17,7 @@
  */
  
 #include <api/types.h>
+#include <api/cpu.h>
 #include <api/cpu/timer.h>
 #include <amd64/cpu/timer.h>
 #include <amd64/cpu/lapic.h>
@@ -106,20 +107,23 @@ static cpu_timer_handler_t *_cpu_timer_handlers = 0;
  */
 static void _cpu_timer_irq(uint8_t vector, void *ctx)
 {
-    // Increase tick count
-    console_print("#");
-    ++_cpu_timer_ticks;
+    // Get current CPU
+    cpu_t *cpu = cpu_get(cpu_current_id());
+
+    // Increase tick count if BSP
+    if (0 != (cpu->flags & CPU_FLAG_BSP))
+        ++_cpu_timer_ticks;
     
     // Iterate over handlers
-    /*cpu_timer_handler_t *current = _cpu_timer_handlers;
+    cpu_timer_handler_t *current = _cpu_timer_handlers;
     while (0 != current) {
         // Check granularity
         if (0 == _cpu_timer_ticks % current->granularity)
-            current->callback(_cpu_timer_ticks, ctx);
+            current->callback(_cpu_timer_ticks, ctx, cpu);
             
         // Next
         current = current->next;
-    }*/
+    }
     
     // EOI
     cpu_lapic_eoi();
