@@ -3,3 +3,4 @@ default 0
 title Oxygen OS
 kernel /boot/loader64.bin
 module /boot/kernel64.bin
+module /boot/root64.bin

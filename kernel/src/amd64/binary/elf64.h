@@ -15,52 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
+#pragma once
 #include <api/types.h>
-#include <api/sync/spinlock.h>
-#include <api/cpu/int.h>
 
 //----------------------------------------------------------------------------//
-// Definitions
+// ELF64 - Constants
 //----------------------------------------------------------------------------//
 
-#define SPINLOCK_FLAG_IRQ (1 << 0)
+#define ELF64_ERROR                 (((uintptr_t) 1) << 63)
+
+/**
+ * ELF64 loader error code.
+ *
+ * Returned when the binary format is not supported or the file is corrupted.
+ */
+#define ELF64_ERROR_BAD_FORMAT      (ELF64_ERROR | (1 << 0))
+
+/**
+ * ELF64 loader error code.
+ *
+ * Returned when the binary type (executable/relocatable) is not supported by
+ * the loader function.
+ */
+#define ELF64_ERROR_BAD_TYPE        (ELF64_ERROR | (1 << 1))
+
+/**
+ * ELF64 loader error code.
+ *
+ * Returned when the binary requests to map itself to an address not in the
+ * lower half of 48-bit memory space.
+ */
+#define ELF64_ERROR_ILLEGAL_ADDR    (ELF64_ERROR | (1 << 2))
 
 //----------------------------------------------------------------------------//
-// Spinlock
+// ELF64
 //----------------------------------------------------------------------------//
 
-void spinlock_acquire(spinlock_t *lock)
-{
-    #ifdef __KERNEL__
-        // Check if interrupts are active
-        bool interruptsActive = cpu_is_interruptable();
-    
-        // Stop interrupts
-        if (!interruptsActive)
-            cpu_set_interruptable(false);
-    #endif
-        
-    // Try to acquire lock
-    while (!__sync_bool_compare_and_swap(&lock->lock, false, true));
-    
-    // Store interrupt state
-    lock->flags = 0;
-    
-    #ifdef __KERNEL__
-        if (interruptsActive) lock->flags |= SPINLOCK_FLAG_IRQ;
-    #endif
-}
-
-void spinlock_release(spinlock_t *lock)
-{
-    // Release lock
-    if (!__sync_bool_compare_and_swap(&lock->lock, true, false))
-        return;
-        
-    #ifdef __KERNEL__
-        // Restore interrupt state
-        if (lock->flags & SPINLOCK_FLAG_IRQ)
-            cpu_set_interruptable(true);
-    #endif __KERNEL__
-}
+/**
+ * Loads an ELF64 linked executable in the current address space.
+ *
+ * @param binary The ELF64 binary to load.
+ * @return The address of the binary's entry-point or error code (error bit set).
+ */
+uintptr_t elf64_exec_load(void *binary);

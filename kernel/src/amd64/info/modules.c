@@ -17,47 +17,32 @@
  */
 
 #include <api/types.h>
-#include <api/string.h>
-
-#include <api/multitasking/stack.h>
-
+#include <api/boot/info.h>
 #include <api/memory/page.h>
-#include <api/memory/frame.h>
+
+#include <amd64/info/modules.h>
 
 //----------------------------------------------------------------------------//
-// Stack
+// Modules
 //----------------------------------------------------------------------------//
 
-size_t stack_resize(size_t size, stack_t *stack)
+void modules_map(boot_info_mod_t *modules)
 {
-    // Align size on page boundary
-    size = mem_align(size, 0x1000);
+    // Map modules
+    uintptr_t placement = MODULES_VIRTUAL_ADDR;
     
-    // Expand?
-    if (size > stack->size) {
-        // Map new pages
-        uintptr_t virt = stack->addr - size;
-        for (; virt < stack->addr - stack->size; virt += 0x1000)
-            page_map(virt, frame_alloc(), PG_PRESENT | PG_WRITABLE | PG_USER);
-            
-    // Collapse
-    } else if (size < stack->size) {
-        // Free pages
-        uintptr_t virt = stack->addr - stack->size;
-        for (; virt < stack->addr - size; virt += 0x1000) {
-            uintptr_t phys = page_get_physical(virt);
-            page_unmap(virt);
-            frame_free(phys);
+    while (0 != modules) {
+        // Set mapping address
+        modules->mapping = placement;
+        
+        // Map module
+        size_t offset;
+        for (offset = 0; offset < modules->length; offset += 0x1000) {
+            page_map(placement, modules->address + offset, PG_PRESENT | PG_WRITABLE);
+            placement += 0x1000;
         }
+        
+        // Next
+        modules = modules->next;
     }
-    
-    // Assign new size
-    stack->size = size;
-    return size;
 }
-
-void stack_dispose(stack_t *stack)
-{
-    stack_resize(0, stack);
-}
-

@@ -17,17 +17,23 @@
  */
 
 #include <api/types.h>
-#include <api/process.h>
-#include <api/process/sched.h>
+#include <api/cpu.h>
+
+#include <api/multitasking.h>
+#include <api/multitasking/scheduler.h>
 
 //----------------------------------------------------------------------------//
 // Scheduler - Internal
 //----------------------------------------------------------------------------//
 
-static void _scheduler_timer_handler(uint64_t ticks, void *_ctx)
+void scheduler_timer_handler(uint64_t ticks, void *_ctx, cpu_t *cpu)
 {
-    // Get current CPU
-    cpu_t *cpu = cpu_get(cpu_current_id());
+    if (0 == (cpu->flags & CPU_FLAG_BSP))
+        return;
+
+    /*console_print("Ticks: ");
+    console_print_hex(ticks);
+    console_print("\n");*/
     
     // Acquire process lock
     process_lock();

@@ -16,12 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once
 #include <api/types.h>
+#include <api/string.h>
+
+#include <api/cpu.h>
+#include <api/cpu/ipi.h>
+
+#include <api/memory/heap.h>
+#include <api/memory/page.h>
+
 #include <api/multitasking.h>
+#include <api/multitasking/scheduler.h>
 #include <api/multitasking/thread.h>
 #include <api/multitasking/process.h>
 #include <api/multitasking/stack.h>
+
+#include <amd64/cpu/int.h>
 
 //----------------------------------------------------------------------------//
 // Stack - Definitions
@@ -54,24 +64,24 @@ static void _thread_stack_create(thread_t *thread, process_t *proc)
 {
     // Find first free stack frame
     uintptr_t frame = THREAD_STACK_ADDR_BEGIN + THREAD_STACK_SIZE_MAX;
-    bool free = true;
+    bool _free = true;
     
     do {
         thread_t *current = proc->threads;
         while (0 != current) {
             // Frame blocked?
             if (current->id != thread->id &&
-                frame == current->stack_addr) {
+                frame == current->stack.addr) {
                 
-                free = false;
+                _free = false;
                 frame += THREAD_STACK_SIZE_MAX;
                 break;
             }
             
             // Next
-            current = current->next;
+            current = current->next_proc;
         }
-    } while (!free);
+    } while (!_free);
     
     // Assign stack frame
     thread->stack.addr = frame;
@@ -100,15 +110,15 @@ static void _thread_stop(thread_t *thread, process_t *proc)
         // Thread found?
         if (thread->id != current->id) {
             previous = current;
-            current = current->next;
+            current = current->next_proc;
             continue;
         }
         
         // Remove from list
         if (0 == previous)
-            proc->threads = thread->next;
+            proc->threads = thread->next_proc;
         else
-            previous->next = thread->next;
+            previous->next_proc = thread->next_proc;
     }
     
     // Free structure
@@ -132,7 +142,7 @@ void thread_switch(thread_t *thread, process_t *proc, void *_ctx)
     cpu_t *cpu = cpu_get(cpu_current_id());
     
     // Different thread executing?
-    if (0 == cpu->thread || thread->id != cpu->thread->id) {
+    if (0 != cpu->thread && thread->id != cpu->thread->id) {
         // Save current state
         memcpy(cpu->thread->pause_ctx, ctx, sizeof(cpu_int_state_t));
         cpu->thread->instr_ptr = ctx->ip;
@@ -141,13 +151,13 @@ void thread_switch(thread_t *thread, process_t *proc, void *_ctx)
         scheduler_return(cpu->thread);
         
         // Marked for termination?
-        if (0 != cpu->thread->flags & THREAD_FLAG_TERMINATE)
-            _thread_stop(cpu->thread);
+        if (0 != (cpu->thread->flags & THREAD_FLAG_TERMINATE))
+            _thread_stop(cpu->thread, cpu->process);
     }
     
     // Address space switch, if required
     if (0 == cpu->process || proc->id != cpu->process->id)
-        page_switch_space(proc->addr_space);
+        page_switch_space(proc->address_space);
     
     // Set new thread and process
     cpu->thread = thread;
@@ -161,11 +171,11 @@ void thread_switch(thread_t *thread, process_t *proc, void *_ctx)
         memcpy(ctx, thread->pause_ctx, sizeof(cpu_int_state_t));
     else {
         // Create new context
-        ctx = thread->pause_ctx = (cpu_int_state_t *) malloc(sizeof(cpu_int_state_t));
-        memset(ctx, 0, sizeof(cpu_int_state_t));
+        thread->pause_ctx = (cpu_int_state_t *) malloc(sizeof(cpu_int_state_t));
+        memset(thread->pause_ctx, 0, sizeof(cpu_int_state_t));
         
         ctx->ip = thread->instr_ptr;
-        ctx->bp = ctx->sp = thread->stack_addr;
+        ctx->bp = ctx->sp = thread->stack.addr;
     }
 }
 
@@ -178,7 +188,11 @@ thread_t *thread_tick(void *context)
     if (0 == cpu->thread || 0 == cpu->thread->ttl) {
         // Schedule new thread
         thread_t *thread = scheduler_next();
-        thread_switch(thread);
+        
+        // New thread scheduled?
+        if (0 != thread)
+            thread_switch(thread, process_get(thread->process_id), context);
+        
         return thread;
     }
     
@@ -218,17 +232,29 @@ void thread_stop(thread_t *thread)
     // Remove from scheduler
     scheduler_remove(thread);
 
-    // Is running?
-    // If not, the thread is removed from the scheduler and will be removed
-    // the next time it is unscheduled.
-    if (thread_running(thread))
+    // Find the CPU running the thread, if any
+    cpu_t *cpu = cpu_get_first();
+    while (0 != cpu) {
+        // Found?
+        if (0 != cpu->thread && thread->id == cpu->thread->id)
+            break;
+            
+        // Next
+        cpu = cpu->next;
+    }
+    
+    // CPU found?
+    if (0 != cpu && cpu->id != cpu_current_id()) {
+        // Send IPI
+        cpu_ipi_single(0x31, cpu); // TODO: Vector as a constant
         return;
+    }
     
     // Find hosting process
     process_t *proc = process_get(thread->process_id);
     
     // Stop the thread
-    _thread_stop(thread);
+    _thread_stop(thread, proc);
 }
 
 //----------------------------------------------------------------------------//

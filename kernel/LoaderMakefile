@@ -12,6 +12,7 @@ CCFLAGS=-m32 \
     -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings \
     -D__X86__ \
     -D__DEBUG__ \
+    -D__LOADER__ \
     -x c \
     -I$(SOURCE_DIR)/
     

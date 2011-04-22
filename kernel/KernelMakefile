@@ -12,6 +12,7 @@ CCFLAGS=-m64 \
     -Wshadow -Wpointer-arith -Wcast-align -Wwrite-strings \
     -D__AMD64__ \
     -D__DEBUG__ \
+    -D__KERNEL__ \
     -x c \
     -mcmodel=large \
     -I$(SOURCE_DIR)/
@@ -24,6 +25,10 @@ OBJECT_FILES = \
     amd64/debug/console.o \
     amd64/io/io.o \
     amd64/io/cmos.o \
+    amd64/multitasking/process.o \
+    amd64/multitasking/thread.o \
+    amd64/multitasking/stack.o \
+    amd64/multitasking/timer.o \
     amd64/memory/frame.o \
     amd64/memory/page.o \
     amd64/memory/heap.o \
@@ -39,7 +44,9 @@ OBJECT_FILES = \
     amd64/cpu/asm/int.o \
     amd64/cpu/asm/smp.o \
     amd64/info/acpi.o \
+    amd64/info/modules.o \
     amd64/util/time.o \
+    common/multitasking/roundrobin.o \
     common/memory/dlmalloc.o \
     common/debug/console.o \
     common/memory/frame.o \

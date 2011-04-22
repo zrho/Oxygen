@@ -83,7 +83,7 @@ process_t *process_spawn(
     process_t *parent, uintptr_t addr_space, uintptr_t entry_point);
     
 /**
- * Marks the process of the given id and all child processes for termination.
+ * Tries to terminate the process and all of its child processes.
  *
  * It is NOT guaranteed that the process is terminated after this method has
  * returned.

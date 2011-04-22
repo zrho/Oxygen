@@ -48,9 +48,14 @@ typedef struct boot_info_mmap_t
 typedef struct boot_info_mod_t
 {
     /**
-     * The address the module begins at.
+     * The physical address the module begins at.
      */
     uint64_t address;
+    
+    /**
+     * The virtual address the module begins at (in the kernel).
+     */
+    uint64_t mapping;
     
     /**
      * The length of the module.

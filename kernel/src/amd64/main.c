@@ -54,6 +54,8 @@ static void pg_fault(interrupt_vector_t vector, void *ctx)
     while(1);
 }
 
+void scheduler_timer_handler(uint64_t ticks, void *_ctx);
+
 /*static void tmr_handler(uint64_t ticks, void *ctx)
 {
     console_print("Tick ");
@@ -104,7 +106,6 @@ int main(void)
     
     // Relocate frame bitset
     frame_setup_relocate();
-    //page_unmap_low();
     
     // Copy info data to other physical frame
     uintptr_t info_phys = frame_alloc();
@@ -142,7 +143,16 @@ int main(void)
     console_print("[CORE] Initializing system time...\n");
     time_init();
     
+    // Map modules
+    console_print("[CORE] Mapping modules...\n");
+    modules_map((boot_info_mod_t *) info->mods);
+    
+    // Get rid of low memory mapping
+    page_unmap_low();
+    
     // Find root binary
+    console_print("[CORE] Searching root binary...\n");
+    
     boot_info_mod_t *module = (boot_info_mod_t *) info->mods;
     
     while (0 != module) {
@@ -162,7 +172,9 @@ int main(void)
     }
     
     // Load root binary
-    uintptr_t entry_point = elf64_exec_load((void *) module->address);
+    console_print("[CORE] Loading root binary...\n");
+    
+    uintptr_t entry_point = elf64_exec_load((void *) module->mapping);
     
     if (entry_point & ELF64_ERROR) {
         console_print("[CORE] Failed to load root binary.\nError code: ");
@@ -171,7 +183,12 @@ int main(void)
     }
     
     // Spawn root process
-    process_spawn(0, page_get_space(), entry_point);
+    process_t *proc = process_spawn(0, page_get_space(), entry_point);
+    scheduler_add(proc->threads);
+    
+    // Add multitasking timer handler
+    console_print("[CORE] Initializing multitasking...\n");
+    cpu_timer_register((timer_handler_t) &scheduler_timer_handler, 1);
     
     console_print("[CORE] Done.");
     return 0;

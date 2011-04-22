@@ -17,8 +17,12 @@
  */
 
 #include <api/types.h>
+
 #include <api/memory/heap.h>
+#include <api/memory/page.h>
+
 #include <api/sync/spinlock.h>
+
 #include <api/multitasking.h>
 #include <api/multitasking/scheduler.h>
 #include <api/multitasking/process.h>
@@ -60,7 +64,7 @@ static process_priority_t _process_priority_default = 128;
 process_t *process_get(process_id_t id)
 {
     // Try to find process
-    process_t *current = _process_list;
+    process_t *current = _process_first;
     while (0 != current) {
         if (id == current->id)
             break;
@@ -74,14 +78,14 @@ process_t *process_get(process_id_t id)
 
 process_t *process_first(void)
 {
-    return _process_list;
+    return _process_first;
 }
 
 size_t process_count(void)
 {
     // Count
     size_t c = 0;
-    process_t *current = _process_list;
+    process_t *current = _process_first;
     while (0 != current) {
         ++c;
         current = current->next;
@@ -131,27 +135,62 @@ process_t *process_spawn(
         _process_last->next = proc;
         
     _process_last = proc;
+    
+    return proc;
 }
 
-void process_terminate(process_id_t pid)
+void process_terminate(process_t *proc)
 {
-    // Try to get process
-    process_t *proc = process_get(pid);
-    if (0 == proc)
-        return;
-
     // Mark for termination
-    process->flags |= PROCESS_FLAG_TERMINATE;
+    bool marked = (0 != (proc->flags & PROCESS_FLAG_TERMINATE));
+    proc->flags |= PROCESS_FLAG_TERMINATE;
+    
+    // Threads remaining?
+    if (0 != proc->threads) {
+        // When the thread has been marked before, its threads are already about
+        // to terminate
+        if (marked) return;
+        
+        // Terminate threads
+        thread_t *thread = proc->threads;
+        while (0 != thread) {
+            // Terminate
+            if (0 == (thread->flags & THREAD_FLAG_TERMINATE))
+                thread_stop(thread);
+                
+            // Next
+            thread = thread->next_proc;
+        }
+        
+        // Real termination happens on termination of the last thread
+        return;
+    }
+    
+    // TODO: Close IPC channels
     
     // Mark children for termination
-    process_t *current = _process_list;
+    process_t *current = _process_first;
     while (0 != current) {
         // Is child process?
-        if (current->parent == process)
-            _process_terminate_mark(process);
+        if (0 != current->parent && current->parent->id == proc->id)
+            process_terminate(proc);
             
         // Next
         current = current->next;
+    }
+    
+    // Is root process?
+    if (0 == proc->id) {
+        // TODO: Shutdown system
+    } else {
+        // Switch to process' address space
+        page_switch_space(proc->address_space);
+        
+        // Dispose address space, switching to root kernel space
+        page_dispose_space();
+        
+        // Remove process structure
+        free(proc);
     }
 }
     
@@ -161,10 +200,10 @@ void process_terminate(process_id_t pid)
     
 process_priority_t process_default_priority_get(void)
 {
-    return _process_default_priority;
+    return _process_priority_default;
 }
 
 void process_default_priority_set(process_priority_t pri)
 {
-    _process_default_priority = pri;
+    _process_priority_default = pri;
 }

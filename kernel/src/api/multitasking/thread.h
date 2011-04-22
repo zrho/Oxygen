@@ -57,7 +57,7 @@ thread_t *thread_tick(void *context);
  * @param entry_point The entry point for the thread to start at.
  * @return The structure describing the thread.
  */
-thread_t *thread_create(process_id_t proc, uintptr_t entry_point);
+thread_t *thread_create(process_t *proc, uintptr_t entry_point);
 
 /**
  * Stops the given thread.
@@ -67,13 +67,6 @@ thread_t *thread_create(process_id_t proc, uintptr_t entry_point);
  * @param thread The thread to stop.
  */
 void thread_stop(thread_t *thread);
-
-/**
- * Checks whether the given thread is currently running on one of the other CPUs.
- *
- * @param thread The thread its running state to check.
- */
-bool thread_running(thread_t *thread);
 
 //----------------------------------------------------------------------------//
 // Thread - Scheduler Hooks

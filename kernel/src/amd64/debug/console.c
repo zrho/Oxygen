@@ -56,7 +56,7 @@ static void _console_scroll()
     if (LIKELY(console_cursor_y < CONSOLE_HEIGHT))
         return;
     
-    // Move up the screens contents one line
+    // Move up the screen's contents one line
     size_t i;
     
     for (i = CONSOLE_WIDTH; i < CONSOLE_WIDTH * CONSOLE_HEIGHT; ++i)

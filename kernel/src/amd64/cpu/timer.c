@@ -41,7 +41,7 @@
 /**
  * The timer's interval in microseconds.
  */
-#define TIMER_INTERVAL                  100
+#define TIMER_INTERVAL                  50000
 
 //----------------------------------------------------------------------------//
 // Timer - Structures
@@ -247,12 +247,11 @@ void cpu_timer_init(bool calibrate)
     *LAPIC_REGISTER(LAPIC_INIT_COUNT_OFFSET) = initial;
          
     // Set current count
-    console_print_hex(*LAPIC_REGISTER(LAPIC_CURRENT_COUNT_OFFSET));
     *LAPIC_REGISTER(LAPIC_CURRENT_COUNT_OFFSET) = initial;
     
     // Unmask interrupt
     *LAPIC_REGISTER(LAPIC_LVT_OFFSET) &= ~(1 << 16);
-        
+
     // Register interrupt handler
     cpu_int_register(INT_VECTOR_TIMER, &_cpu_timer_irq);
 }

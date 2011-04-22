@@ -39,7 +39,7 @@ thread_t *scheduler_next(void)
 
     // Take top and remove
     thread_t *top = _scheduler_queue_first;
-    _scheduler_queue_first = top->sched_next;
+    _scheduler_queue_first = top->next_sched;
     
     if (0 == _scheduler_queue_first)
         _scheduler_queue_last = 0;
@@ -54,12 +54,12 @@ void scheduler_return(thread_t *thread)
         return;
 
     // Insert at the end of the queue
-    thread->sched_next = 0;
+    thread->next_sched = 0;
     
     if (0 == _scheduler_queue_first)
         _scheduler_queue_first = _scheduler_queue_last = thread;
     else {
-        _scheduler_queue_last->sched_next = thread;
+        _scheduler_queue_last->next_sched = thread;
         _scheduler_queue_last = thread;
     }
 }
@@ -70,7 +70,7 @@ void scheduler_add(thread_t *thread)
     thread->flags |= THREAD_FLAG_SCHEDULED;
     
     // Insert at the beginning of the queue
-    thread->sched_next = _scheduler_queue_first;
+    thread->next_sched = _scheduler_queue_first;
     
     if (0 == _scheduler_queue_first)
         _scheduler_queue_first = _scheduler_queue_last = thread;
@@ -94,7 +94,7 @@ void scheduler_remove(thread_t *thread)
         
         // Next
         previous = current;
-        current = current->sched_next;
+        current = current->next_sched;
     }
     
     // Thread found?
@@ -103,9 +103,9 @@ void scheduler_remove(thread_t *thread)
         
     // Remove
     if (0 == previous)
-        _scheduler_queue_first = thread->sched_next;
+        _scheduler_queue_first = thread->next_sched;
     else
-        previous->sched_next = thread->sched_next;
+        previous->next_sched = thread->next_sched;
         
     if (0 == _scheduler_queue_first)
         _scheduler_queue_last = 0;
