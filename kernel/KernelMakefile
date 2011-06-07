@@ -46,6 +46,8 @@ OBJECT_FILES = \
     amd64/info/acpi.o \
     amd64/info/modules.o \
     amd64/util/time.o \
+    amd64/syscall.o \
+    amd64/syscall/mmap.o \
     common/multitasking/roundrobin.o \
     common/memory/dlmalloc.o \
     common/debug/console.o \

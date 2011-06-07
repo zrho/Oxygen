@@ -222,6 +222,8 @@ thread_t *thread_create(process_t *proc, uintptr_t entry_point)
     // Insert into list
     thread->next_proc = proc->threads;
     proc->threads = thread;
+    
+    return thread;
 }
 
 void thread_stop(thread_t *thread)
@@ -246,7 +248,7 @@ void thread_stop(thread_t *thread)
     // CPU found?
     if (0 != cpu && cpu->id != cpu_current_id()) {
         // Send IPI
-        cpu_ipi_single(0x31, cpu); // TODO: Vector as a constant
+        cpu_ipi_single(0x31, cpu->id); // TODO: Vector as a constant
         return;
     }
     

@@ -16,36 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
 #include <api/types.h>
-#include <api/boot/info.h>
-#include <api/memory/page.h>
-
-#include <amd64/info/modules.h>
-#include <amd64/memory/map.h>
-
-#include <api/debug/console.h>
 
 //----------------------------------------------------------------------------//
-// Modules
+// Memory Map
 //----------------------------------------------------------------------------//
 
-void modules_map(boot_info_mod_t *modules)
-{
-    // Map modules
-    uintptr_t placement = MEMORY_MODULES_VADDR;
-    
-    while (0 != modules) {
-        // Set mapping address
-        modules->mapping = placement;
-        
-        // Map module
-        size_t offset;
-        for (offset = 0; offset < modules->length; offset += 0x1000) {
-            page_map(placement, modules->address + offset, PG_PRESENT | PG_WRITABLE);
-            placement += 0x1000;
-        }
-        
-        // Next
-        modules = modules->next;
-    }
-}
+#define MEMORY_BOOT_PML4_PADDR 0x2000
+#define MEMORY_BOOT_PAGE_HEAP_PADDR 0x3000
+
+#define MEMORY_BOOT_INFO_PADDR 0x1000
+#define MEMORY_BOOT_INFO_VADDR 0xFFFFFF7FFFFFE000
+
+#define MEMORY_VIDEO_PADDR 0xB8000
+#define MEMORY_VIDEO_VADDR 0xFFFFFF7FFFFFF000
+
+#define MEMORY_LAPIC_VADDR 0xFFFFFF7FFFFFC000
+#define MEMORY_FRAMES_VADDR 0xFFFFFF7F80000000
+#define MEMORY_GDT64_VADDR 0xFFFFFF7FFFFFD000
+#define MEMORY_MODULES_VADDR 0xFFFFFE0000000000

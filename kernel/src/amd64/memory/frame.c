@@ -21,6 +21,7 @@
 #include <api/memory/frame.h>
 #include <api/memory/page.h>
 #include <amd64/memory/frame.h>
+#include <amd64/memory/map.h>
 #include <api/debug/console.h>
 
 //----------------------------------------------------------------------------//
@@ -110,11 +111,11 @@ void frame_setup_relocate()
     
     for (offset = 0; offset < frame_bitset_size; offset += 0x1000)
         page_map(
-            FRAME_BITSET_VIRTUAL + offset,
+            MEMORY_FRAMES_VADDR + offset,
             frame_bitset_addr + offset,
             PG_PRESENT | PG_GLOBAL | PG_WRITABLE);
             
     // Relocate frame bitset
-    frame_bitset_addr = FRAME_BITSET_VIRTUAL;
-    frame_relocate(FRAME_BITSET_VIRTUAL);
+    frame_bitset_addr = MEMORY_FRAMES_VADDR;
+    frame_relocate(MEMORY_FRAMES_VADDR);
 }

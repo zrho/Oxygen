@@ -41,12 +41,15 @@
 #include <amd64/util/time.h>
 #include <amd64/binary/elf64.h>
 
+#include <amd64/memory/map.h>
 #include <amd64/memory/frame.h>
 #include <amd64/memory/page.h>
 
 #include <amd64/cpu.h>
 #include <amd64/cpu/int.h>
 #include <amd64/cpu/lapic.h>
+
+#include <amd64/syscall.h>
 
 static void pg_fault(interrupt_vector_t vector, void *ctx)
 {
@@ -81,7 +84,7 @@ int main(void)
     console_print("\n");
     
     // Print info
-    boot_info_t *info = (boot_info_t *) BOOT_INFO_VIRTUAL;
+    boot_info_t *info = (boot_info_t *) MEMORY_BOOT_INFO_VADDR;
 
     console_print("Entry: ");
     console_print_hex(info->entry_point);
@@ -109,8 +112,8 @@ int main(void)
     
     // Copy info data to other physical frame
     uintptr_t info_phys = frame_alloc();
-    memcpy((void *) info_phys, (void *) BOOT_INFO_VIRTUAL, 0x1000);
-    page_map(BOOT_INFO_VIRTUAL, info_phys, PG_GLOBAL | PG_PRESENT);
+    memcpy((void *) info_phys, (void *) MEMORY_BOOT_INFO_VADDR, 0x1000);
+    page_map(MEMORY_BOOT_INFO_VADDR, info_phys, PG_GLOBAL | PG_PRESENT);
     
     // Initialize interrupts
     console_print("[CORE] Initializing interrupts...\n");
@@ -149,6 +152,9 @@ int main(void)
     
     // Get rid of low memory mapping
     page_unmap_low();
+    
+    // Add syscall interrupt handler
+    cpu_int_register(0x80, (interrupt_handler_t) &syscall_int_handler);
     
     // Find root binary
     console_print("[CORE] Searching root binary...\n");

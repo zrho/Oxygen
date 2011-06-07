@@ -18,15 +18,7 @@
  
 #pragma once
 #include <api/types.h>
-
-//----------------------------------------------------------------------------//
-// LAPIC - Constants
-//----------------------------------------------------------------------------//
-
-/**
- * The virtual address the LAPIC is mapped to.
- */
-#define LAPIC_VIRTUAL_ADDR 0xFFFFFF7FFFFFC000
+#include <amd64/memory/map.h>
 
 //----------------------------------------------------------------------------//
 // LAPIC - Register Offsets
@@ -51,7 +43,7 @@
 // LAPIC - Macroes
 //----------------------------------------------------------------------------//
 
-#define LAPIC_REGISTER(offset)      ((uint32_t *) (LAPIC_VIRTUAL_ADDR + offset))
+#define LAPIC_REGISTER(offset)      ((uint32_t *) (MEMORY_LAPIC_VADDR + offset))
 
 //----------------------------------------------------------------------------//
 // LAPIC

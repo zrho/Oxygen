@@ -36,7 +36,21 @@
 typedef struct cpu_int_state_t
 { 
     uint64_t ds;
-    uint64_t bp, di, si, bx, dx, cx, ax, r8, r9, r10, r11, r12, r13, r14, r15;
+    uint64_t r15;
+    uint64_t r14;
+    uint64_t r13;
+    uint64_t r12;
+    uint64_t r11;
+    uint64_t r10;
+    uint64_t r9;
+    uint64_t r8;
+    uint64_t ax;
+    uint64_t cx;
+    uint64_t dx;
+    uint64_t bx;
+    uint64_t si;
+    uint64_t di;
+    uint64_t bp;
     uint64_t vector;
     uint64_t error_code;
     uint64_t ip;

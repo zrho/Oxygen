@@ -35,6 +35,7 @@ typedef uintptr_t page_t;
 #define PG_DIRTY        1 << 6          // Dirty
 #define PG_ACCESSED     1 << 7          // Accessed
 #define PG_GLOBAL       1 << 8          // Global
+#define PG_NX           1 << 9          // No-Execute
 
 //----------------------------------------------------------------------------//
 // Page - Mapping

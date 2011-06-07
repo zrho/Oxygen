@@ -19,14 +19,7 @@
 #pragma once
 #include <api/types.h>
 #include <api/boot/info.h>
-#include <api/boot/multiboot.h>
- 
-//----------------------------------------------------------------------------//
-// Memory
-//----------------------------------------------------------------------------//
-
-#define BOOT_INFO_PHYSICAL  0x1000
-#define BOOT_INFO_VIRTUAL   0xFFFFFF7FFFFFE000
+#include <api/boot/multiboot.h> 
  
 //----------------------------------------------------------------------------//
 // Modules

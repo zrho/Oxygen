@@ -26,6 +26,7 @@
 #include <amd64/boot/loader.h>
 #include <amd64/boot/page.h>
 #include <amd64/boot/gdt.h>
+#include <amd64/memory/map.h>
 
 #include <api/debug/console.h>
 
@@ -133,7 +134,7 @@ void init(multiboot_info_t *mbi, uint32_t magic)
     *trampoline_addr = (uint64_t) info->entry_point;
     
     // Relocate info structure
-    boot_info_relocate(info, BOOT_INFO_VIRTUAL);
+    boot_info_relocate(info, MEMORY_BOOT_INFO_VADDR);
     
     // Set beginning of usable memory
     info->free_mem_begin = mem_align(load_res.mem_end, 0x1000);

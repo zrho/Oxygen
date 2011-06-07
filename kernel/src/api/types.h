@@ -29,7 +29,7 @@ typedef unsigned long long  uint64_t;
 typedef          long long   int64_t;
 
 // Boolean
-typedef uint8_t bool;
+typedef unsigned char bool;
 
 #define TRUE 1
 #define true 1

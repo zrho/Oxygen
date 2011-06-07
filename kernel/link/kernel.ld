@@ -17,6 +17,7 @@ SECTIONS
    {
         data = .;
         *(.data)
+        . = ALIGN(4096);
         cpu_smp_trampoline = .;
         *(.cpu_smp_trampoline)
         . = ALIGN(4096);

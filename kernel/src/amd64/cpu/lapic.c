@@ -55,7 +55,7 @@ void cpu_lapic_set(uintptr_t addr)
 {
     cpu_lapic_addr = addr;
     page_map(
-        LAPIC_VIRTUAL_ADDR,
+        MEMORY_LAPIC_VADDR,
         cpu_lapic_addr,
         PG_GLOBAL | PG_PRESENT | PG_WRITABLE);
 }

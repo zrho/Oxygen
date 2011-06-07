@@ -127,8 +127,6 @@ static void _cpu_timer_irq(uint8_t vector, void *ctx)
     
     // EOI
     cpu_lapic_eoi();
-    
-    return ctx;
 }
 
 /**
@@ -162,8 +160,6 @@ static void _cpu_timer_init_irq(uint8_t vector, void *ctx)
     
     // Send EOI to PIC
     cpu_pic_eoi(0);
-    
-    return ctx;
 }
 
 //----------------------------------------------------------------------------//

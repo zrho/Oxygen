@@ -19,6 +19,7 @@
 #include <api/types.h>
 #include <api/string.h>
 #include <amd64/memory/page.h>
+#include <amd64/memory/map.h>
 #include <amd64/boot/page.h>
 #include <api/debug/console.h>
 
@@ -29,7 +30,7 @@
 /**
  * Placement address for new paging structures.
  */
-uint32_t boot_page_placement = BOOT_PAGE_HEAP_OFFSET;
+uint32_t boot_page_placement = MEMORY_BOOT_PAGE_HEAP_PADDR;
 
 //----------------------------------------------------------------------------//
 // Internal methods
@@ -58,7 +59,8 @@ static uintptr_t _boot_page_alloc()
 static uint64_t *_boot_page_get(uint64_t virt)
 {
     // PML4E
-    uint64_t *pml4e = (uint64_t *) (uintptr_t) (BOOT_PML4_OFFSET + PAGE_PML4E_INDEX(virt) * 8);
+    uint64_t *pml4e = (uint64_t *) (uintptr_t) (
+            MEMORY_BOOT_PML4_PADDR + PAGE_PML4E_INDEX(virt) * 8);
     
     if (!(*pml4e & PG_PRESENT))
         *pml4e = _boot_page_alloc() | PG_PRESENT;
@@ -88,7 +90,7 @@ extern uint8_t _cpu_gdt_gates;
 void boot_page_setup(uint64_t infoAddress)
 {
     // Create PML4 and clear subsequent memory
-    uint64_t *pml4 = (uint64_t *) BOOT_PML4_OFFSET;
+    uint64_t *pml4 = (uint64_t *) MEMORY_BOOT_PML4_PADDR;
     memset(pml4, 0, 0x1000);
     memset((void *) boot_page_placement, 0, 0x6000);
 

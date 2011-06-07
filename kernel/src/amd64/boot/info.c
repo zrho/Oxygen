@@ -21,12 +21,13 @@
 #include <api/boot/info.h>
 #include <api/boot/multiboot.h>
 #include <amd64/boot/info.h>
+#include <amd64/memory/map.h>
 
 //----------------------------------------------------------------------------//
 // Variables
 //----------------------------------------------------------------------------//
 
-uint64_t boot_info_address = BOOT_INFO_PHYSICAL;
+uint64_t boot_info_address = MEMORY_BOOT_INFO_PADDR;
 
 //----------------------------------------------------------------------------//
 // Macros
@@ -48,7 +49,7 @@ uintptr_t boot_modules_relocate(boot_info_t *info, uintptr_t placement)
     boot_info_mod_t *sorted_end = sorted;
     
     while (0 != info->mods) {
-        // Find ealiest module
+        // Find first module
         boot_info_mod_t *current = (boot_info_mod_t *) (uintptr_t) info->mods;
         boot_info_mod_t *prev = 0;
         boot_info_mod_t *min_prev = 0;
@@ -150,7 +151,7 @@ void boot_info_relocate(boot_info_t *info, uint64_t address)
 boot_info_t *boot_create_info(multiboot_info_t *mbi)
 {
     // Placement address
-    uintptr_t placement = BOOT_INFO_PHYSICAL;
+    uintptr_t placement = MEMORY_BOOT_INFO_PADDR;
     
     // Info structure
     boot_info_t *info = (boot_info_t *) placement;

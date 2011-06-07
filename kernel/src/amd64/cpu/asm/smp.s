@@ -39,7 +39,7 @@ trampoline_real:
     mov ds, ax
     jmp 0x0000:0x1200
     
-align 0x200
+align 512
 trampoline_real2:
     ; Enable A20 gate
     ENABLE_A20
@@ -60,7 +60,7 @@ trampoline_real2:
 %include "amd64/boot/long.s"
 
 ; Sets up long mode and jumps to trampoline_long
-align 0x400
+align 1024
 trampoline_protected:
     ; Enable PAE
     ENABLE_PAE
@@ -87,7 +87,7 @@ trampoline_protected:
 ; Long mode
 ;-------------------------------------------------------------------------------    
 [BITS 64]
-align 0x400
+align 1024
 trampoline_long:
     mov rdi, TRAMPOLINE_ENTRY_POINT_OFFSET
     mov rax, [rdi]
@@ -96,7 +96,7 @@ trampoline_long:
 ;-------------------------------------------------------------------------------
 ; Data
 ;-------------------------------------------------------------------------------    
-align 0x400
+align 1024
 
 ; Pointer to 64 bit GDT, filled in by kernel
 ; Offset: 0

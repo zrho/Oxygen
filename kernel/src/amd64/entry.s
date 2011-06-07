@@ -54,7 +54,7 @@ gdt_pointer:
 
 section .bss
 
-align 0x1000
+align 4096
 stack_begin:
     resb 0x1000  ; Reserve 4 KiB
 stack_end:
